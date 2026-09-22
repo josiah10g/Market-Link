@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS orders (
   payment_status VARCHAR(20) DEFAULT 'pay_on_delivery' CHECK (payment_status IN ('unpaid', 'paid', 'pay_on_delivery')),
   payment_method VARCHAR(30) DEFAULT 'pay_on_delivery',
   payment_reference VARCHAR(100),
+  idempotency_key VARCHAR(100),
   delivery_address TEXT NOT NULL,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -112,6 +113,8 @@ CREATE INDEX IF NOT EXISTS idx_orders_vendor_id ON orders(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_idempotency_key ON orders(idempotency_key) WHERE idempotency_key IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_payment_reference ON orders(payment_reference) WHERE payment_reference IS NOT NULL;
 
 -- Storage bucket for product images (if not created via UI)
 INSERT INTO storage.buckets (id, name, public)

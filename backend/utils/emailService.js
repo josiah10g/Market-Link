@@ -16,13 +16,29 @@ const getTransporter = () => {
   const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '';
 
   if (user && pass) {
+    console.log(`[NODEMAILER] Configuring SMTP: host=${host}, port=${port}, user=${user}, pass=${'*'.repeat(Math.min(pass.length, 4))}...`);
+    
     transporter = nodemailer.createTransport({
       host,
       port,
       secure: port === 465, // true for 465, false for 587
-      auth: { user, pass }
+      auth: { user, pass },
+      tls: {
+        rejectUnauthorized: false // Allow self-signed certs in dev
+      }
+    });
+
+    // Verify the connection on first creation
+    transporter.verify((err, success) => {
+      if (err) {
+        console.error('[NODEMAILER] SMTP connection verification FAILED:', err.message);
+        console.error('[NODEMAILER] Check your SMTP_USER and SMTP_PASS (for Gmail, use an App Password from https://myaccount.google.com/apppasswords)');
+      } else {
+        console.log('[NODEMAILER] ✓ SMTP connection verified successfully — emails will be delivered');
+      }
     });
   } else {
+    console.warn('[NODEMAILER] No SMTP_USER/SMTP_PASS set — running in simulation mode (emails logged to console only)');
     // Development / fallback logger transporter when credentials aren't set yet
     transporter = {
       sendMail: async (mailOptions) => {

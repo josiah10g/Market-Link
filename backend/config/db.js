@@ -79,6 +79,22 @@ module.exports = {
       return { rows: data || [] };
     }
 
+    // 3B. GET USER BY ID (getMe query — includes avatar_url, is_active, created_at)
+    if ((lower.includes('from users where id =') || lower.includes('from users where id=$')) && !lower.startsWith('update')) {
+      const id = params[0];
+      const { data, error } = await supabase.from('users').select('*').eq('id', id);
+      if (error) throw error;
+      return { rows: data || [] };
+    }
+
+    // 3C. GET USER email/name BY ID (for email dispatch)
+    if (lower.startsWith('select email') && lower.includes('from users where id =')) {
+      const id = params[0];
+      const { data, error } = await supabase.from('users').select('email, name').eq('id', id);
+      if (error) throw error;
+      return { rows: data || [] };
+    }
+
     // 4. GET VENDOR BY USER_ID
     if (lower.includes('from vendors where user_id =')) {
       const userId = params[0];
@@ -187,9 +203,28 @@ module.exports = {
 
     // 10. UPDATE PRODUCT
     if (lower.startsWith('update products')) {
-      if (lower.includes('stock_quantity = stock_quantity +') || (lower.includes('set stock_quantity =') && params.length <= 2)) {
+      // Stock increment (restock on cancel) or stock decrement (order placement)
+      if (lower.includes('stock_quantity = stock_quantity +') || lower.includes('stock_quantity = stock_quantity -') || (lower.includes('set stock_quantity =') && params.length <= 2)) {
+        const quantity = parseInt(params[0], 10);
         const id = params[params.length - 1];
-        const newStock = params[0];
+
+        // Fetch current stock first
+        const { data: current, error: fetchErr } = await supabase
+          .from('products')
+          .select('stock_quantity')
+          .eq('id', id)
+          .single();
+        if (fetchErr) throw fetchErr;
+
+        let newStock;
+        if (lower.includes('stock_quantity = stock_quantity +')) {
+          newStock = (current.stock_quantity || 0) + quantity;
+        } else if (lower.includes('stock_quantity = stock_quantity -')) {
+          newStock = Math.max(0, (current.stock_quantity || 0) - quantity);
+        } else {
+          newStock = quantity;
+        }
+
         const { data, error } = await supabase
           .from('products')
           .update({ stock_quantity: newStock })
@@ -298,6 +333,29 @@ module.exports = {
         .select()
         .single();
       if (error) throw error;
+      return { rows: [data] };
+    }
+
+    // 10D-B. INSERT INTO NOTIFICATIONS
+    if (lower.startsWith('insert into notifications')) {
+      const [user_id, order_id, type, title, message] = params;
+      const insertObj = {
+        user_id,
+        type,
+        title,
+        message,
+        is_read: false
+      };
+      if (order_id) insertObj.order_id = order_id;
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert(insertObj)
+        .select()
+        .single();
+      if (error) {
+        console.warn('[DB Bridge] Notifications insert error (table may not exist):', error.message);
+        return { rows: [{ id: null }] };
+      }
       return { rows: [data] };
     }
 
@@ -513,13 +571,109 @@ module.exports = {
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(20);
       if (error) {
         // Table may not exist yet — return empty
         console.warn('[DB Bridge] Notifications query error (table may not exist):', error.message);
         return { rows: [] };
       }
       return { rows: data || [] };
+    }
+
+    // 15B. UPDATE NOTIFICATIONS (mark read)
+    if (lower.startsWith('update notifications')) {
+      if (lower.includes('where id =')) {
+        const id = params[params.length - 1];
+        const { data, error } = await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) {
+          console.warn('[DB Bridge] Notification update error:', error.message);
+          return { rows: [] };
+        }
+        return { rows: [data] };
+      }
+      // Mark all read for user
+      if (lower.includes('where user_id =')) {
+        const userId = params[0];
+        const { error } = await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('user_id', userId)
+          .eq('is_read', false);
+        if (error) {
+          console.warn('[DB Bridge] Notifications bulk update error:', error.message);
+        }
+        return { rows: [] };
+      }
+      return { rows: [] };
+    }
+
+    // 15C. DELETE product
+    if (lower.startsWith('delete from products')) {
+      const id = params[0];
+      let query = supabase.from('products').delete().eq('id', id);
+      if (params.length > 1) {
+        query = query.eq('vendor_id', params[1]);
+      }
+      const { error } = await query;
+      if (error) throw error;
+      return { rows: [] };
+    }
+
+    // 15D. SELECT reviews for vendor
+    if (lower.includes('from reviews')) {
+      if (lower.includes('where r.order_id =') || lower.includes('where order_id =')) {
+        const orderId = params[0];
+        const customerId = params.length > 1 ? params[1] : null;
+        let q = supabase.from('reviews').select('*').eq('order_id', orderId);
+        if (customerId) q = q.eq('customer_id', customerId);
+        const { data, error } = await q;
+        if (error) throw error;
+        return { rows: data || [] };
+      }
+      // General reviews query
+      let q = supabase.from('reviews').select('*, users(name), orders(order_code)');
+      if (params.length > 0 && lower.includes('vendor_id')) {
+        q = q.eq('vendor_id', params[0]);
+      }
+      const { data, error } = await q.order('created_at', { ascending: false });
+      if (error) throw error;
+      const formatted = (data || []).map(r => ({
+        ...r,
+        customer_name: r.users?.name,
+        order_code: r.orders?.order_code
+      }));
+      return { rows: formatted };
+    }
+
+    // 15E. UPDATE vendors total_orders counter
+    if (lower.includes('total_orders = total_orders + 1')) {
+      const vendorId = params[0];
+      const { data: current } = await supabase.from('vendors').select('total_orders').eq('id', vendorId).single();
+      const { error } = await supabase
+        .from('vendors')
+        .update({ total_orders: (current?.total_orders || 0) + 1 })
+        .eq('id', vendorId);
+      if (error) console.warn('[DB Bridge] Vendor total_orders update error:', error.message);
+      return { rows: [] };
+    }
+
+    // 15F. UPDATE vendors rating
+    if (lower.startsWith('update vendors set rating')) {
+      const rating = params[0];
+      const ratingCount = params[1];
+      const vendorId = params[params.length - 1];
+      const { error } = await supabase
+        .from('vendors')
+        .update({ rating, rating_count: ratingCount })
+        .eq('id', vendorId);
+      if (error) console.warn('[DB Bridge] Vendor rating update error:', error.message);
+      return { rows: [] };
     }
 
     // 16. Transaction control (no-op for Supabase, each operation is auto-committed)

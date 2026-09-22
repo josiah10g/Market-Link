@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, ShieldCheck, Zap, Star } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
-import { LoadingState, ErrorState } from '../components/StateIndicators';
+import { LoadingState, ErrorState, EmptyState } from '../components/StateIndicators';
 import api from '../api/axios';
 
 export const Home = () => {
@@ -246,6 +246,8 @@ export const Home = () => {
               <LoadingState message="Loading catalog..." />
             ) : error ? (
               <ErrorState message={error} />
+            ) : popularProducts.length === 0 ? (
+              <EmptyState title="No items available yet" description="Check back soon as merchants list new items." />
             ) : (
               <div
                 style={{

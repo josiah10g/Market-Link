@@ -23,9 +23,60 @@ import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 
 import { useLocation } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
 function AppContent() {
   const location = useLocation();
+  const { loading } = useAuth();
+
+  // Global auth loading gate — prevents black screen flash while session is being verified
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'var(--bg)',
+          gap: '1.5rem'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+          <img src="/favicon.svg" alt="" style={{ width: '32px', height: '32px', borderRadius: '6px' }} />
+          <span style={{ fontSize: '1.35rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+            Market<span style={{ color: 'var(--lime)' }}>Link</span>
+          </span>
+        </div>
+        <div style={{ position: 'relative', width: '44px', height: '44px' }}>
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              border: '2.5px solid rgba(185, 255, 102, 0.15)',
+              borderRadius: '50%'
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              border: '2.5px solid transparent',
+              borderTopColor: 'var(--lime)',
+              borderRightColor: 'rgba(185, 255, 102, 0.4)',
+              borderRadius: '50%',
+              animation: 'marketLinkSpin 0.75s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+              boxShadow: '0 0 15px rgba(185, 255, 102, 0.2)'
+            }}
+          />
+        </div>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--muted)', fontWeight: 500 }}>
+          Loading your session...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div key={location.pathname} className="page-enter" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

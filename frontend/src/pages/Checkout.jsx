@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Truck, CreditCard, Banknote, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Truck, CreditCard, Banknote, ArrowLeft, CheckCircle2, PackageCheck, AlertTriangle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/axios';
+
+// Generate a UUID v4 for idempotency
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
 
 export const Checkout = () => {
   const { items, activeVendor, totalAmount, clearCart } = useCart();
@@ -20,6 +29,119 @@ export const Checkout = () => {
   const [loadingMessage, setLoadingMessage] = useState('Processing Order...');
   const [error, setError] = useState('');
 
+  // Success state — shown after a successful order
+  const [orderSuccess, setOrderSuccess] = useState(null);
+
+  // Prevent double-submission
+  const isSubmittingRef = useRef(false);
+  const errorRef = useRef(null);
+
+  // Idempotency key — unique per checkout session, survives soft refreshes
+  const idempotencyKey = useMemo(() => {
+    const storageKey = 'marketlink_checkout_idempotency';
+    let key = sessionStorage.getItem(storageKey);
+    if (!key) {
+      key = generateUUID();
+      sessionStorage.setItem(storageKey, key);
+    }
+    return key;
+  }, []);
+
+  // Auto-scroll to error when it appears
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [error]);
+
+  // Clean up idempotency key and submitting ref on unmount
+  useEffect(() => {
+    return () => {
+      isSubmittingRef.current = false;
+    };
+  }, []);
+
+  if (orderSuccess) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
+        <main style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div style={{ textAlign: 'center', maxWidth: '480px' }}>
+            <div
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(185, 255, 102, 0.12)',
+                border: '2px solid var(--lime)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1.5rem'
+              }}
+            >
+              <CheckCircle2 size={40} color="var(--lime)" />
+            </div>
+
+            <h1 className="heading-display" style={{ fontSize: '2rem', color: 'var(--ink)', marginBottom: '0.5rem' }}>
+              Payment Successful!
+            </h1>
+            <p style={{ color: 'var(--muted)', fontSize: '0.9375rem', marginBottom: '0.75rem' }}>
+              Your order <strong style={{ color: 'var(--lime)' }}>#{orderSuccess.order_code}</strong> has been placed and the vendor has been notified.
+            </p>
+
+            <div
+              className="card"
+              style={{
+                padding: '1.25rem',
+                margin: '1.5rem 0',
+                textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+                <PackageCheck size={16} color="var(--lime)" />
+                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--ink)' }}>Order Summary</span>
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Order Code</span>
+                  <span style={{ color: 'var(--lime)', fontFamily: 'monospace', fontWeight: 600 }}>#{orderSuccess.order_code}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Total Paid</span>
+                  <span style={{ color: 'var(--ink)', fontWeight: 600 }}>₦{Number(orderSuccess.total_amount).toLocaleString()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Payment</span>
+                  <span style={{ color: 'var(--lime)' }}>
+                    {orderSuccess.payment_method === 'paystack' ? '✓ Paid via Paystack' : 'Pay on Delivery'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Status</span>
+                  <span style={{ color: 'var(--status-pending)', fontWeight: 500 }}>Awaiting vendor acceptance</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => navigate('/orders?new_order=' + orderSuccess.order_code)}
+                className="btn btn-primary"
+                style={{ padding: '0.75rem 1.5rem' }}
+              >
+                Track My Order
+              </button>
+              <Link to="/products" className="btn btn-outline" style={{ padding: '0.75rem 1.5rem' }}>
+                Continue Shopping
+              </Link>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -33,7 +155,7 @@ export const Checkout = () => {
   }
 
   // Paystack popup integration
-  const triggerPaystackPopup = (orderCode, onPaymentSuccess, onCancel) => {
+  const triggerPaystackPopup = (onPaymentSuccess, onCancel) => {
     const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_30623a31c6ff96452292f74112e8b2b9f36f6d8a';
 
     if (typeof window.PaystackPop !== 'undefined') {
@@ -83,24 +205,28 @@ export const Checkout = () => {
     e.preventDefault();
     setError('');
 
+    // Guard against double-submit
+    if (isSubmittingRef.current) return;
+
     if (!deliveryAddress.trim()) {
       setError('Please provide a valid Abuja delivery or pickup address.');
       return;
     }
 
-    if (paymentMethod === 'paystack') {
-      const vendorId = Number(activeVendor?.id || activeVendor?.vendor_id || items[0]?.vendor_id);
-      if (!vendorId || isNaN(vendorId)) {
-        setError('Unable to identify vendor for this order. Please try refreshing your cart.');
-        return;
-      }
+    const vendorId = Number(activeVendor?.id || activeVendor?.vendor_id || items[0]?.vendor_id);
+    if (!vendorId || isNaN(vendorId)) {
+      setError('Unable to identify vendor for this order. Please try refreshing your cart.');
+      return;
+    }
 
-      // Step 1: Open Paystack payment modal first
+    // Lock submission
+    isSubmittingRef.current = true;
+
+    if (paymentMethod === 'paystack') {
       setLoading(true);
       setLoadingMessage('Opening Paystack secure payment window...');
 
       triggerPaystackPopup(
-        null,
         async (paystackRef) => {
           // Payment succeeded in Paystack modal! Now atomically place order and verify
           try {
@@ -116,21 +242,29 @@ export const Checkout = () => {
               delivery_address: deliveryAddress,
               notes: notes.trim() || undefined,
               payment_method: 'paystack',
-              payment_reference: paystackRef
+              payment_reference: paystackRef,
+              idempotency_key: idempotencyKey
             };
 
             const { data } = await api.post('/orders', orderPayload);
 
             if (data.success) {
+              // Clear cart FIRST, then show success — ensures cleanup even if component unmounts
               clearCart();
+              localStorage.removeItem('marketlink_cart');
+              localStorage.removeItem('marketlink_cart_vendor');
+              sessionStorage.removeItem('marketlink_checkout_idempotency');
               toast.success(`Payment verified! Order #${data.data.order_code} confirmed.`);
-              navigate('/orders?new_order=' + data.data.order_code);
+              setOrderSuccess(data.data);
+              // Reset ref after success (safe because orderSuccess prevents re-rendering form)
+              isSubmittingRef.current = false;
             }
           } catch (err) {
             console.error('Order creation error post-payment:', err);
             const serverMsg = err.response?.data?.message || err.message || 'Payment received, but error finalizing order.';
-            setError(`${serverMsg} (Ref: ${paystackRef})`);
+            setError(`⚠ ${serverMsg}\n\nYour Paystack payment reference: ${paystackRef}\nPlease save this reference and contact support if your order was not created.`);
             toast.error(serverMsg);
+            isSubmittingRef.current = false;
           } finally {
             setLoading(false);
           }
@@ -138,16 +272,11 @@ export const Checkout = () => {
         () => {
           // User closed Paystack modal without completing
           setLoading(false);
+          isSubmittingRef.current = false;
           toast.info('Payment cancelled. You can retry when ready.');
         }
       );
     } else {
-      const vendorId = Number(activeVendor?.id || activeVendor?.vendor_id || items[0]?.vendor_id);
-      if (!vendorId || isNaN(vendorId)) {
-        setError('Unable to identify vendor for this order. Please try refreshing your cart.');
-        return;
-      }
-
       // Standard Pay on Delivery flow
       try {
         setLoading(true);
@@ -161,19 +290,26 @@ export const Checkout = () => {
           })),
           delivery_address: deliveryAddress,
           notes: notes.trim() || undefined,
-          payment_method: 'pay_on_delivery'
+          payment_method: 'pay_on_delivery',
+          idempotency_key: idempotencyKey
         };
 
         const { data } = await api.post('/orders', orderPayload);
 
         if (data.success) {
+          // Clear cart FIRST, then show success
           clearCart();
+          localStorage.removeItem('marketlink_cart');
+          localStorage.removeItem('marketlink_cart_vendor');
+          sessionStorage.removeItem('marketlink_checkout_idempotency');
           toast.success(`Order #${data.data.order_code} placed successfully!`);
-          navigate('/orders?new_order=' + data.data.order_code);
+          setOrderSuccess(data.data);
+          isSubmittingRef.current = false;
         }
       } catch (err) {
         console.error('Order checkout error:', err);
         setError(err.response?.data?.message || 'Checkout failed. Please try again.');
+        isSubmittingRef.current = false;
       } finally {
         setLoading(false);
       }
@@ -200,8 +336,25 @@ export const Checkout = () => {
           </div>
 
           {error && (
-            <div style={{ padding: '0.9rem', backgroundColor: 'var(--status-cancelled-bg)', border: '1px solid rgba(239, 68, 68, 0.3)', color: 'var(--status-cancelled)', borderRadius: 'var(--radius)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-              {error}
+            <div
+              ref={errorRef}
+              style={{
+                padding: '1rem 1.25rem',
+                backgroundColor: 'var(--status-cancelled-bg)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                color: 'var(--status-cancelled)',
+                borderRadius: 'var(--radius)',
+                fontSize: '0.875rem',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+                whiteSpace: 'pre-line',
+                lineHeight: 1.5
+              }}
+            >
+              <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+              <div>{error}</div>
             </div>
           )}
 
@@ -368,9 +521,9 @@ export const Checkout = () => {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || isSubmittingRef.current}
                   className="btn btn-primary"
-                  style={{ width: '100%', padding: '0.85rem', fontSize: '0.9375rem' }}
+                  style={{ width: '100%', padding: '0.85rem', fontSize: '0.9375rem', opacity: (loading || isSubmittingRef.current) ? 0.6 : 1 }}
                 >
                   {loading ? 'Processing Order...' : paymentMethod === 'paystack' ? `Pay ₦${totalAmount.toLocaleString()} with Paystack` : `Place Order (₦${totalAmount.toLocaleString()})`}
                 </button>
@@ -439,4 +592,3 @@ export const Checkout = () => {
 };
 
 export default Checkout;
-

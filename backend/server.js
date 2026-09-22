@@ -83,10 +83,11 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0';
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`[SERVER] MarketLink API running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`[SERVER] MarketLink API running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT} (bound to ${HOST})`);
   });
 }
 

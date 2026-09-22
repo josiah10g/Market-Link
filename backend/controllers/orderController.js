@@ -1,3 +1,4 @@
+const https = require('https');
 const db = require('../config/db');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { generateOrderCode } = require('../utils/orderCode');
@@ -7,6 +8,37 @@ const {
   sendVendorNewOrderEmail,
   sendOrderStatusEmail
 } = require('../utils/emailService');
+
+// Helper to query Paystack API directly
+const verifyPaystackRef = async (reference, secretKey) => {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.paystack.co',
+      port: 443,
+      path: `/transaction/verify/${encodeURIComponent(reference)}`,
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(new Error('Invalid response from Paystack API'));
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.end();
+  });
+};
 
 // Valid state machine transitions
 const VALID_TRANSITIONS = {
@@ -22,7 +54,7 @@ const VALID_TRANSITIONS = {
 // @route   POST /api/orders
 // @access  Private (Customer only)
 const createOrder = asyncHandler(async (req, res) => {
-  const { items, delivery_address, notes, payment_method, payment_reference } = req.body;
+  const { items, delivery_address, notes, payment_method, payment_reference, idempotency_key } = req.body;
   const vendor_id = parseInt(req.body.vendor_id, 10);
 
   if (!vendor_id || isNaN(vendor_id)) {
@@ -31,6 +63,40 @@ const createOrder = asyncHandler(async (req, res) => {
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ success: false, message: 'Cart cannot be empty' });
+  }
+
+  // Idempotency check: if an order with this idempotency_key or payment_reference already exists, return it
+  if (idempotency_key || payment_reference) {
+    let existingOrderRes;
+    if (idempotency_key && payment_reference) {
+      existingOrderRes = await db.query(
+        'SELECT * FROM orders WHERE idempotency_key = $1 OR payment_reference = $2 LIMIT 1',
+        [idempotency_key, payment_reference]
+      );
+    } else if (idempotency_key) {
+      existingOrderRes = await db.query(
+        'SELECT * FROM orders WHERE idempotency_key = $1 LIMIT 1',
+        [idempotency_key]
+      );
+    } else {
+      existingOrderRes = await db.query(
+        'SELECT * FROM orders WHERE payment_reference = $1 LIMIT 1',
+        [payment_reference]
+      );
+    }
+
+    if (existingOrderRes.rows.length > 0) {
+      const existingOrder = existingOrderRes.rows[0];
+      const itemsRes = await db.query('SELECT * FROM order_items WHERE order_id = $1', [existingOrder.id]);
+      return res.status(200).json({
+        success: true,
+        message: 'Order already processed (idempotent)',
+        data: {
+          ...existingOrder,
+          items: itemsRes.rows
+        }
+      });
+    }
   }
 
   const client = await db.getClient();
@@ -100,12 +166,53 @@ const createOrder = asyncHandler(async (req, res) => {
       });
     }
 
+    // 2b. Paystack verification if paid online
+    const isPaidOnline = payment_method === 'paystack' || payment_method === 'card';
+    if (isPaidOnline) {
+      if (!payment_reference) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ success: false, message: 'Payment reference is required for Paystack payments' });
+      }
+
+      const secretKey = process.env.PAYSTACK_SECRET_KEY;
+      // Skip verification in development if simulated reference or no secret key configured
+      const isSimulated = payment_reference.startsWith('TEST_REF_');
+      if (secretKey && !isSimulated) {
+        try {
+          const verification = await verifyPaystackRef(payment_reference, secretKey);
+          if (!verification.status || verification.data?.status !== 'success') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+              success: false,
+              message: verification.message || 'Payment verification failed with Paystack'
+            });
+          }
+
+          // Verify amount paid (Paystack amount is in kobo, 1 NGN = 100 kobo)
+          const paidKobo = verification.data?.amount;
+          const expectedKobo = Math.round(totalAmount * 100);
+          if (paidKobo && Math.abs(paidKobo - expectedKobo) > 100) { // allow 1 NGN rounding margin
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+              success: false,
+              message: `Payment amount mismatch: expected ₦${totalAmount}, received ₦${paidKobo / 100}`
+            });
+          }
+        } catch (verifyErr) {
+          console.error('[PAYSTACK VERIFICATION ERROR]', verifyErr.message);
+          await client.query('ROLLBACK');
+          return res.status(502).json({
+            success: false,
+            message: 'Could not communicate with Paystack for payment verification. Please try again or contact support.'
+          });
+        }
+      }
+    }
+
     // 3. Generate unique order code with explicit retry loop (handles 23505 collision)
     let orderRow = null;
     let attempts = 0;
     const maxAttempts = 5;
-
-    const isPaidOnline = payment_method === 'paystack' || payment_method === 'card';
 
     while (!orderRow && attempts < maxAttempts) {
       attempts++;
@@ -114,8 +221,8 @@ const createOrder = asyncHandler(async (req, res) => {
         const orderInsertRes = await client.query(
           `INSERT INTO orders (
             order_code, customer_id, vendor_id, total_amount, status,
-            payment_status, payment_method, delivery_address, notes, payment_reference
-          ) VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9)
+            payment_status, payment_method, delivery_address, notes, payment_reference, idempotency_key
+          ) VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10)
           RETURNING *`,
           [
             candidateCode,
@@ -126,7 +233,8 @@ const createOrder = asyncHandler(async (req, res) => {
             payment_method || 'pay_on_delivery',
             delivery_address,
             notes || null,
-            payment_reference || null
+            payment_reference || null,
+            idempotency_key || null
           ]
         );
         orderRow = orderInsertRes.rows[0];
@@ -517,8 +625,6 @@ const getAdminOrders = asyncHandler(async (req, res) => {
 // @desc    Verify Paystack payment reference with Paystack API
 // @route   POST /api/orders/paystack/verify
 // @access  Private (Customer only)
-const https = require('https');
-
 const verifyPaystackPayment = asyncHandler(async (req, res) => {
   const { reference, order_id } = req.body;
 
@@ -531,43 +637,8 @@ const verifyPaystackPayment = asyncHandler(async (req, res) => {
     return res.status(500).json({ success: false, message: 'Paystack secret key is not configured on the server' });
   }
 
-  // Call Paystack API: GET https://api.paystack.co/transaction/verify/:reference
-  const options = {
-    hostname: 'api.paystack.co',
-    port: 443,
-    path: `/transaction/verify/${encodeURIComponent(reference)}`,
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      'Content-Type': 'application/json'
-    }
-  };
-
-  const paystackPromise = new Promise((resolve, reject) => {
-    const paystackReq = https.request(options, (paystackRes) => {
-      let data = '';
-      paystackRes.on('data', (chunk) => {
-        data += chunk;
-      });
-      paystackRes.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          resolve(parsed);
-        } catch (e) {
-          reject(new Error('Invalid response from Paystack API'));
-        }
-      });
-    });
-
-    paystackReq.on('error', (e) => {
-      reject(e);
-    });
-
-    paystackReq.end();
-  });
-
   try {
-    const paystackData = await paystackPromise;
+    const paystackData = await verifyPaystackRef(reference, secretKey);
 
     if (!paystackData.status || paystackData.data?.status !== 'success') {
       return res.status(400).json({
