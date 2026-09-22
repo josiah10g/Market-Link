@@ -313,6 +313,92 @@ export const AdminDashboard = () => {
               </div>
             </div>
 
+            {/* Live Platform Orders & Revenue Transactions (New Rich Admin Section) */}
+            <div id="orders" style={{ marginBottom: '3rem', scrollMarginTop: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <h3 className="heading-display" style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ShoppingBag size={20} color="var(--lime)" /> Platform Orders & Transactions
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: '0.2rem 0 0 0' }}>
+                    Real-time transaction stream across all Abuja vendor storefronts
+                  </p>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                  {orders.length} order(s) recorded
+                </span>
+              </div>
+
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Order Code</th>
+                      <th>Customer</th>
+                      <th>Vendor</th>
+                      <th>Amount</th>
+                      <th>Payment</th>
+                      <th>Fulfillment</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--muted)' }}>
+                          No orders placed on the platform yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      orders.slice(0, 10).map((o) => (
+                        <tr key={o.id}>
+                          <td style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--lime)' }}>
+                            #{o.order_code}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 500, color: 'var(--ink)' }}>{o.customer_name || 'Customer'}</div>
+                            <div style={{ fontSize: '0.6875rem', color: 'var(--muted)' }}>{o.customer_email}</div>
+                          </td>
+                          <td style={{ color: 'var(--ink)', fontWeight: 500 }}>
+                            {o.vendor_business_name || 'Store'}
+                          </td>
+                          <td style={{ fontWeight: 600, color: 'var(--lime)' }}>
+                            ₦{Number(o.total_amount).toLocaleString()}
+                          </td>
+                          <td>
+                            <span className={`badge ${o.payment_status === 'paid' ? 'badge-completed' : 'badge-pending'}`} style={{ textTransform: 'capitalize' }}>
+                              {o.payment_method === 'paystack' ? 'Paystack' : 'COD'} · {o.payment_status}
+                            </span>
+                          </td>
+                          <td>
+                            <span 
+                              className={`badge ${
+                                o.status === 'completed' 
+                                  ? 'badge-completed' 
+                                  : o.status === 'ready' 
+                                  ? 'badge-ready' 
+                                  : o.status === 'in_progress' 
+                                  ? 'badge-progress' 
+                                  : o.status === 'cancelled' 
+                                  ? 'badge-cancelled' 
+                                  : 'badge-pending'
+                              }`}
+                              style={{ textTransform: 'capitalize' }}
+                            >
+                              {o.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                            {new Date(o.created_at).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             {/* Platform Users & Admin Management */}
             <div id="users" style={{ marginTop: '2.5rem', scrollMarginTop: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

@@ -39,8 +39,8 @@ export const OrderStatusBadge = ({ status }) => {
 
   const getDisplayLabel = (st) => {
     const s = st?.toLowerCase();
-    if (s === 'in_progress' || s === 'preparing') return 'In Progress';
-    if (s === 'pending') return 'Pending';
+    if (s === 'in_progress' || s === 'preparing') return 'Preparing';
+    if (s === 'pending') return 'Order Placed';
     if (s === 'accepted') return 'Accepted';
     if (s === 'ready') return 'Ready';
     if (s === 'completed') return 'Completed';

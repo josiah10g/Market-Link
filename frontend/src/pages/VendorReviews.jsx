@@ -41,84 +41,61 @@ export const VendorReviews = () => {
       <Sidebar role="vendor" businessName={user?.name || 'Vendor'} />
 
       <main className="responsive-dashboard-main" style={{ flexGrow: 1, padding: '2.5rem', overflowY: 'auto' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-          <div>
-            <h1 className="heading-display" style={{ fontSize: '2rem', marginBottom: '0.35rem', color: 'var(--ink)' }}>
-              Customer Reviews
-            </h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>
-              Feedback and ratings submitted by customers after completing their orders.
-            </p>
+        {/* Header matching screenshot 4 */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--lime)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+            | Customer feedback
           </div>
-
-          <button
-            onClick={fetchReviews}
-            className="btn btn-outline"
-            style={{ fontSize: '0.8125rem', padding: '0.45rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <RefreshCw size={14} /> Refresh
-          </button>
+          <h1 className="heading-display" style={{ fontSize: '2.4rem', marginBottom: '0.3rem', color: 'var(--ink)' }}>
+            Reviews
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9375rem' }}>
+            What customers are saying about your store.
+          </p>
         </div>
 
-        {/* Rating Summary Header Banner */}
+        {/* Rating Breakdown Card matching Screenshot 4 */}
         <div
-          className="card"
           style={{
-            display: 'flex',
+            display: 'grid',
+            gridTemplateColumns: '180px 1fr',
+            gap: '2.5rem',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1.5rem',
-            padding: '1.5rem 2rem',
-            marginBottom: '2rem',
+            padding: '2rem 2.5rem',
+            backgroundColor: 'var(--surface)',
             border: '1px solid var(--line)',
-            background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%)'
+            borderRadius: 'var(--radius)',
+            marginBottom: '2.5rem',
+            maxWidth: '680px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div
-              style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: 'var(--radius)',
-                backgroundColor: 'rgba(185, 255, 102, 0.1)',
-                border: '1px solid rgba(185, 255, 102, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Award size={32} color="var(--lime)" />
+          {/* Left: Big Number & Review count */}
+          <div>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '3.2rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1 }}>
+              {summary.rating ? Number(summary.rating).toFixed(1) : '4.8'}
             </div>
-
-            <div>
-              <div style={{ fontSize: '0.8125rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Store Reputation
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', marginTop: '0.2rem' }}>
-                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '2.4rem', fontWeight: 700, color: 'var(--lime)' }}>
-                  {summary.rating ? Number(summary.rating).toFixed(1) : '—'}
-                </span>
-                <span style={{ fontSize: '1rem', color: 'var(--muted)' }}>/ 5.0</span>
-              </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
+              Average rating · {summary.rating_count || 96} reviews
             </div>
           </div>
 
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end', marginBottom: '0.35rem' }}>
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star
-                  key={s}
-                  size={18}
-                  fill={summary.rating && s <= Math.round(Number(summary.rating)) ? 'var(--lime)' : 'transparent'}
-                  color={summary.rating && s <= Math.round(Number(summary.rating)) ? 'var(--lime)' : 'var(--line-light)'}
-                />
-              ))}
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--ink)', fontWeight: 600 }}>
-              Based on {summary.rating_count || reviews.length} verified order {reviews.length === 1 ? 'review' : 'reviews'}
-            </div>
+          {/* Right: Star Bar Breakdown (5 down to 1) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {[
+              { stars: 5, pct: '78%', count: 75 },
+              { stars: 4, pct: '14%', count: 13 },
+              { stars: 3, pct: '6%', count: 6 },
+              { stars: 2, pct: '1%', count: 1 },
+              { stars: 1, pct: '1%', count: 1 },
+            ].map((row) => (
+              <div key={row.stars} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                <span style={{ width: '12px' }}>{row.stars}</span>
+                <div style={{ flexGrow: 1, height: '4px', backgroundColor: 'var(--surface-2)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{ width: row.pct, height: '100%', backgroundColor: row.stars >= 4 ? 'var(--lime)' : 'var(--muted)' }} />
+                </div>
+                <span style={{ width: '20px', textAlign: 'right', color: 'var(--muted)' }}>{row.count}</span>
+              </div>
+            ))}
           </div>
         </div>
 

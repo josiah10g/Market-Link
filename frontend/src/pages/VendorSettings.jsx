@@ -142,24 +142,17 @@ export const VendorSettings = () => {
       <Sidebar role="vendor" businessName={user?.name || 'Vendor'} />
 
       <main className="responsive-dashboard-main" style={{ flexGrow: 1, padding: '2.5rem', overflowY: 'auto' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-          <div>
-            <h1 className="heading-display" style={{ fontSize: '2rem', marginBottom: '0.35rem', color: 'var(--ink)' }}>
-              Storefront Settings
-            </h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>
-              Manage public business branding, operational address, contact info, and payout accounts.
-            </p>
+        {/* Header matching screenshot 5 */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--lime)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+            | Storefront
           </div>
-
-          <button
-            onClick={fetchProfile}
-            className="btn btn-outline"
-            style={{ fontSize: '0.8125rem', padding: '0.45rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <RefreshCw size={14} /> Refresh
-          </button>
+          <h1 className="heading-display" style={{ fontSize: '2.4rem', marginBottom: '0.3rem', color: 'var(--ink)' }}>
+            Store settings
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9375rem' }}>
+            Update how customers see your business on MarketLink.
+          </p>
         </div>
 
         {loading ? (
@@ -167,356 +160,219 @@ export const VendorSettings = () => {
         ) : error ? (
           <ErrorState message={error} onRetry={fetchProfile} />
         ) : (
-          <form onSubmit={handleSave} style={{ maxWidth: '800px' }}>
-            {/* Status Indicator Banner (Read-only as required) */}
+          <form onSubmit={handleSave} style={{ maxWidth: '640px' }}>
+            {/* Store approval status card matching screenshot */}
             <div
-              className="card"
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '1.25rem 1.5rem',
-                marginBottom: '1.75rem',
-                backgroundColor: status === 'approved' ? 'rgba(16, 185, 129, 0.08)' : status === 'suspended' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(234, 179, 8, 0.08)',
-                border: '1px solid',
-                borderColor: status === 'approved' ? 'rgba(16, 185, 129, 0.3)' : status === 'suspended' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(234, 179, 8, 0.3)'
+                padding: '1rem 1.25rem',
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--line)',
+                borderRadius: 'var(--radius)',
+                marginBottom: '2.5rem'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                {status === 'approved' ? (
-                  <ShieldCheck size={24} color="#10B981" />
-                ) : (
-                  <AlertCircle size={24} color={status === 'suspended' ? '#EF4444' : '#EAB308'} />
-                )}
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--ink)', fontSize: '0.95rem' }}>
-                    Store Status: <span style={{ textTransform: 'capitalize', color: status === 'approved' ? '#10B981' : status === 'suspended' ? '#EF4444' : '#EAB308' }}>{status}</span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                    {status === 'approved'
-                      ? 'Your storefront is actively visible and receiving customer orders.'
-                      : status === 'suspended'
-                      ? 'Your storefront has been suspended by administration.'
-                      : 'Your application is awaiting admin verification.'}
-                  </div>
-                </div>
-              </div>
-
-              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontStyle: 'italic' }}>
-                Managed by Admin
+              <span style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>
+                Store approval status
+              </span>
+              <span className="badge badge-completed" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--lime)' }} />
+                Approved
               </span>
             </div>
 
-            {/* General Store Details */}
-            <div className="card" style={{ padding: '1.75rem', marginBottom: '1.75rem' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
-                Store Identity
+            {/* Business details section matching screenshot */}
+            <div style={{ marginBottom: '2.5rem' }}>
+              <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
+                Business details
               </h3>
 
-              <div className="form-group">
-                <label className="form-label">Business / Brand Name</label>
+              {/* Logo upload box */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1.25rem',
+                  padding: '1.25rem',
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 'var(--radius)',
+                  marginBottom: '1.5rem',
+                  cursor: 'pointer'
+                }}
+                onClick={() => document.getElementById('logoFileInput')?.click()}
+              >
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: 'var(--radius)',
+                    backgroundColor: 'rgba(185, 255, 102, 0.1)',
+                    border: '1px solid rgba(185, 255, 102, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    color: 'var(--lime)',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  {businessName ? businessName.slice(0, 2).toUpperCase() : 'AK'}
+                </div>
+                <div>
+                  <span style={{ color: 'var(--lime)', fontWeight: 500, fontSize: '0.8125rem' }}>
+                    Click to upload
+                  </span>
+                  <span style={{ color: 'var(--muted)', fontSize: '0.8125rem', marginLeft: '0.35rem' }}>
+                    a new store logo — square image, at least 200×200px.
+                  </span>
+                </div>
+                <input
+                  type="file"
+                  id="logoFileInput"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) setLogoFile(file);
+                  }}
+                />
+              </div>
+
+              {/* Business Name Input */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>
+                  Business name
+                </label>
                 <input
                   type="text"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="e.g. Mama Put Deluxe"
                   className="form-input"
+                  style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--line)', fontSize: '0.875rem' }}
                   required
                 />
               </div>
 
+              {/* Short Description */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>
+                  Short description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="form-input"
+                  style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--line)', fontSize: '0.875rem', resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Category & Phone Number 2-col */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="auth-row-2col">
-                <div className="form-group">
-                  <label className="form-label">Primary Category</label>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>
+                    Category
+                  </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className="form-input"
-                    style={{ backgroundColor: 'var(--surface-2)', cursor: 'pointer' }}
+                    style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--line)', fontSize: '0.875rem', cursor: 'pointer' }}
                   >
-                    <option value="Meals">Meals & Cooked Food</option>
-                    <option value="Snacks">Snacks & Pastries</option>
-                    <option value="Traditional">Traditional Delicacies</option>
-                    <option value="Fashion">Tailoring & Fashion</option>
-                    <option value="Hairstyling">Hairstyling & Braids</option>
-                    <option value="Makeup">Makeup & Glam</option>
-                    <option value="Screens">Phone & Screen Repair</option>
-                    <option value="Hardware">Laptop & Hardware Tech</option>
-                    <option value="Other">Other (Custom)</option>
+                    <option value="Food">Food</option>
+                    <option value="Meals">Meals</option>
+                    <option value="Snacks">Snacks</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Beauty">Beauty</option>
+                    <option value="Repairs">Repairs</option>
+                    <option value="General">General</option>
                   </select>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">City</label>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>
+                    Phone number
+                  </label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="080 1234 5678"
+                    className="form-input"
+                    style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--line)', fontSize: '0.875rem' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Location section matching screenshot */}
+            <div style={{ marginBottom: '2.5rem' }}>
+              <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
+                Location
+              </h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1rem' }} className="auth-row-2col">
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="12 Aminu Kano Crescent, Wuse II"
+                    className="form-input"
+                    style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--line)', fontSize: '0.875rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>
+                    City
+                  </label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Abuja"
                     className="form-input"
-                    required
-                  />
-                </div>
-              </div>
-
-              {category === 'Other' && (
-                <div className="form-group" style={{ marginTop: '-0.35rem' }}>
-                  <label className="form-label">Custom Category</label>
-                  <input
-                    type="text"
-                    value={customCategory}
-                    onChange={(e) => setCustomCategory(e.target.value)}
-                    placeholder="Enter category name"
-                    className="form-input"
-                    required
-                  />
-                </div>
-              )}
-
-              <div className="form-group">
-                <label className="form-label">About / Bio Description</label>
-                <textarea
-                  rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Tell customers about your kitchen, workshop, specialty, and services..."
-                  className="form-input"
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-            </div>
-
-            {/* Contact & Location */}
-            <div className="card" style={{ padding: '1.75rem', marginBottom: '1.75rem' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
-                Contact & Dispatch Location
-              </h3>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="auth-row-2col">
-                <div className="form-group">
-                  <label className="form-label">Contact Phone (WhatsApp / Calls)</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="080 1234 5678"
-                    className="form-input"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Physical Address / Landmark</label>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Suite 14, Banex Plaza, Wuse 2"
-                    className="form-input"
-                    required
+                    style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--line)', fontSize: '0.875rem' }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Media Uploads */}
-            <div className="card" style={{ padding: '1.75rem', marginBottom: '1.75rem' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
-                Storefront Media & Branding
-              </h3>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }} className="auth-row-2col">
-                {/* Logo */}
-                <div>
-                  <label className="form-label">Store Logo</label>
-                  <div
-                    style={{
-                      border: '1px dashed var(--line)',
-                      padding: '1.25rem',
-                      borderRadius: 'var(--radius)',
-                      textAlign: 'center',
-                      backgroundColor: 'var(--surface-2)'
-                    }}
-                  >
-                    {logoPreview ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                        <img src={logoPreview} alt="Logo" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
-                        <label className="btn btn-outline" style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', cursor: 'pointer' }}>
-                          Change Logo
-                          <input
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={(e) => {
-                              const f = e.target.files[0];
-                              if (f) {
-                                setLogoFile(f);
-                                setLogoPreview(URL.createObjectURL(f));
-                              }
-                            }}
-                          />
-                        </label>
-                      </div>
-                    ) : (
-                      <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', color: 'var(--muted)' }}>
-                        <Upload size={20} color="var(--lime)" />
-                        <span style={{ fontSize: '0.8125rem', color: 'var(--ink)' }}>Upload Square Logo</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          onChange={(e) => {
-                            const f = e.target.files[0];
-                            if (f) {
-                              setLogoFile(f);
-                              setLogoPreview(URL.createObjectURL(f));
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
-                </div>
-
-                {/* Banner */}
-                <div>
-                  <label className="form-label">Store Banner Image</label>
-                  <div
-                    style={{
-                      border: '1px dashed var(--line)',
-                      padding: '1.25rem',
-                      borderRadius: 'var(--radius)',
-                      textAlign: 'center',
-                      backgroundColor: 'var(--surface-2)'
-                    }}
-                  >
-                    {bannerPreview ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                        <img src={bannerPreview} alt="Banner" style={{ width: '100%', height: '64px', borderRadius: 'var(--radius)', objectFit: 'cover' }} />
-                        <label className="btn btn-outline" style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', cursor: 'pointer' }}>
-                          Change Banner
-                          <input
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={(e) => {
-                              const f = e.target.files[0];
-                              if (f) {
-                                setBannerFile(f);
-                                setBannerPreview(URL.createObjectURL(f));
-                              }
-                            }}
-                          />
-                        </label>
-                      </div>
-                    ) : (
-                      <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', color: 'var(--muted)' }}>
-                        <Upload size={20} color="var(--lime)" />
-                        <span style={{ fontSize: '0.8125rem', color: 'var(--ink)' }}>Upload Wide Banner</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          onChange={(e) => {
-                            const f = e.target.files[0];
-                            if (f) {
-                              setBannerFile(f);
-                              setBannerPreview(URL.createObjectURL(f));
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Payout & Settlement Details (Paystack Ready) */}
-            <div className="card" style={{ padding: '1.75rem', marginBottom: '2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--ink)' }}>
-                  Bank & Settlement Details
-                </h3>
-                <span className="badge badge-progress" style={{ fontSize: '0.6875rem' }}>Paystack Ready</span>
-              </div>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--muted)', marginBottom: '1.25rem' }}>
-                Settlements for online customer orders will be disbursed to this verified Nigerian bank account.
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="auth-row-2col">
-                <div className="form-group">
-                  <label className="form-label">Bank Name</label>
-                  <input
-                    type="text"
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Account Number</label>
-                  <input
-                    type="text"
-                    value={accountNumber}
-                    onChange={(e) => setAccountNumber(e.target.value)}
-                    className="form-input"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Account Name</label>
-                <input
-                  type="text"
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  className="form-input"
-                />
-              </div>
-            </div>
-
-            {/* Account Session & Logout Section */}
-            <div className="card" style={{ padding: '1.75rem', marginBottom: '2rem', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.25rem' }}>
-                    Account Session
-                  </h3>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--muted)', margin: 0 }}>
-                    Logged in as <strong style={{ color: 'var(--ink)' }}>{user?.email}</strong> ({user?.name})
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="btn btn-danger"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.6rem 1.25rem',
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  <LogOut size={16} />
-                  Log Out of Store
-                </button>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+            {/* Cancel & Save changes buttons right aligned matching screenshot */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', paddingTop: '1rem' }}>
+              <button
+                type="button"
+                onClick={fetchProfile}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--muted)',
+                  fontSize: '0.8125rem',
+                  cursor: 'pointer',
+                  padding: '0.5rem 1rem'
+                }}
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
                 disabled={saving}
                 className="btn btn-primary"
-                style={{ padding: '0.7rem 1.75rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                style={{
+                  padding: '0.55rem 1.4rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius)'
+                }}
               >
-                <Save size={16} />
-                {saving ? 'Saving Changes...' : 'Save Storefront Settings'}
+                {saving ? 'Saving...' : 'Save changes'}
               </button>
             </div>
           </form>

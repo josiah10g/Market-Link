@@ -89,6 +89,12 @@ export const Checkout = () => {
     }
 
     if (paymentMethod === 'paystack') {
+      const vendorId = Number(activeVendor?.id || activeVendor?.vendor_id || items[0]?.vendor_id);
+      if (!vendorId || isNaN(vendorId)) {
+        setError('Unable to identify vendor for this order. Please try refreshing your cart.');
+        return;
+      }
+
       // Step 1: Open Paystack payment modal first
       setLoading(true);
       setLoadingMessage('Opening Paystack secure payment window...');
@@ -102,10 +108,10 @@ export const Checkout = () => {
             setLoadingMessage('Verifying payment and generating order...');
 
             const orderPayload = {
-              vendor_id: activeVendor.id,
+              vendor_id: vendorId,
               items: items.map((it) => ({
-                product_id: it.product_id,
-                quantity: it.quantity
+                product_id: Number(it.product_id || it.id),
+                quantity: Number(it.quantity)
               })),
               delivery_address: deliveryAddress,
               notes: notes.trim() || undefined,
@@ -122,8 +128,9 @@ export const Checkout = () => {
             }
           } catch (err) {
             console.error('Order creation error post-payment:', err);
-            setError(err.response?.data?.message || 'Payment received, but error finalizing order. Please contact support with reference: ' + paystackRef);
-            toast.error('Error finalizing order. Please check orders or contact support.');
+            const serverMsg = err.response?.data?.message || err.message || 'Payment received, but error finalizing order.';
+            setError(`${serverMsg} (Ref: ${paystackRef})`);
+            toast.error(serverMsg);
           } finally {
             setLoading(false);
           }
@@ -135,16 +142,22 @@ export const Checkout = () => {
         }
       );
     } else {
+      const vendorId = Number(activeVendor?.id || activeVendor?.vendor_id || items[0]?.vendor_id);
+      if (!vendorId || isNaN(vendorId)) {
+        setError('Unable to identify vendor for this order. Please try refreshing your cart.');
+        return;
+      }
+
       // Standard Pay on Delivery flow
       try {
         setLoading(true);
         setLoadingMessage('Processing Order...');
 
         const orderPayload = {
-          vendor_id: activeVendor.id,
+          vendor_id: vendorId,
           items: items.map((it) => ({
-            product_id: it.product_id,
-            quantity: it.quantity
+            product_id: Number(it.product_id || it.id),
+            quantity: Number(it.quantity)
           })),
           delivery_address: deliveryAddress,
           notes: notes.trim() || undefined,

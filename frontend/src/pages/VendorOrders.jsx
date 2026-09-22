@@ -144,89 +144,89 @@ export const VendorOrders = () => {
       <Sidebar role="vendor" businessName={user?.name || 'Vendor'} />
 
       <main className="responsive-dashboard-main" style={{ flexGrow: 1, padding: '2.5rem', overflowY: 'auto' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-          <div>
-            <h1 className="heading-display" style={{ fontSize: '2rem', marginBottom: '0.35rem', color: 'var(--ink)' }}>
-              Orders Workhorse
-            </h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>
-              Full operational order stream, customer fulfillment actions, and detailed dispatch notes.
-            </p>
+        {/* Header matching screenshot */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--lime)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+            | Order management
           </div>
-
-          <button
-            onClick={fetchOrders}
-            className="btn btn-outline"
-            style={{ fontSize: '0.8125rem', padding: '0.45rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <RefreshCw size={14} /> Refresh Stream
-          </button>
+          <h1 className="heading-display" style={{ fontSize: '2.4rem', marginBottom: '0.3rem', color: 'var(--ink)' }}>
+            Orders
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9375rem' }}>
+            Every order placed with your store, in one place.
+          </p>
         </div>
 
-        {/* Status Tabs */}
+        {/* Filter Tabs & Search Bar on the same row matching user screenshot */}
         <div
-          className="responsive-orders-tabs"
           style={{
             display: 'flex',
-            gap: '0.5rem',
-            overflowX: 'auto',
-            paddingBottom: '0.5rem',
-            marginBottom: '1.5rem',
-            borderBottom: '1px solid var(--line)'
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            marginBottom: '1.5rem'
           }}
         >
-          {statusTabs.map((tab) => {
-            const count = tab.key === 'all' ? orders.length : orders.filter((o) => o.status === tab.key).length;
-            const isActive = statusFilter === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setStatusFilter(tab.key)}
-                style={{
-                  padding: '0.45rem 0.85rem',
-                  borderRadius: 'var(--radius)',
-                  fontSize: '0.8125rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: '1px solid',
-                  borderColor: isActive ? 'var(--lime)' : 'transparent',
-                  backgroundColor: isActive ? 'var(--lime-soft)' : 'var(--surface)',
-                  color: isActive ? 'var(--lime)' : 'var(--muted)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                <span>{tab.label}</span>
-                <span
+          {/* Status Tabs */}
+          <div
+            className="responsive-orders-tabs"
+            style={{
+              display: 'flex',
+              gap: '0.5rem',
+              overflowX: 'auto',
+              paddingBottom: '0.25rem'
+            }}
+          >
+            {[
+              { key: 'all', label: 'All', count: orders.length },
+              { key: 'pending', label: 'Pending', count: orders.filter(o => o.status === 'pending').length },
+              { key: 'accepted', label: 'Accepted', count: orders.filter(o => o.status === 'accepted').length },
+              { key: 'in_progress', label: 'In progress', count: orders.filter(o => o.status === 'in_progress').length },
+              { key: 'ready', label: 'Ready', count: orders.filter(o => o.status === 'ready').length },
+              { key: 'completed', label: 'Completed', count: orders.filter(o => o.status === 'completed').length },
+              { key: 'cancelled', label: 'Cancelled', count: orders.filter(o => o.status === 'cancelled').length }
+            ].map((tab) => {
+              const isActive = statusFilter === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setStatusFilter(tab.key)}
                   style={{
-                    fontSize: '0.72rem',
-                    padding: '0.1rem 0.35rem',
-                    borderRadius: '4px',
-                    backgroundColor: isActive ? 'rgba(185, 255, 102, 0.2)' : 'var(--surface-2)',
-                    color: isActive ? 'var(--lime)' : 'var(--muted)'
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '0.8125rem',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    color: isActive ? 'var(--lime)' : 'var(--muted)',
+                    padding: '0.2rem 0.4rem',
+                    borderBottom: isActive ? '2px solid var(--lime)' : '2px solid transparent',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  {tab.label} ({tab.count})
+                </button>
+              );
+            })}
+          </div>
 
-        {/* Search Input */}
-        <div style={{ marginBottom: '1.5rem', maxWidth: '400px', position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-          <input
-            type="text"
-            placeholder="Search by order code or customer name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-input"
-            style={{ paddingLeft: '2.4rem', fontSize: '0.85rem' }}
-          />
+          {/* Search Input right aligned matching screenshot */}
+          <div style={{ minWidth: '240px', position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search order code or custom..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input"
+              style={{
+                fontSize: '0.8125rem',
+                padding: '0.45rem 0.85rem',
+                backgroundColor: 'var(--surface-2)',
+                borderColor: 'var(--line)',
+                borderRadius: 'var(--radius)'
+              }}
+            />
+          </div>
         </div>
 
         {/* Content */}
@@ -246,54 +246,110 @@ export const VendorOrders = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Order</th>
-                  <th>Customer</th>
-                  <th>Items Summary</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Placed</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th>ORDER</th>
+                  <th>CUSTOMER</th>
+                  <th>ITEMS</th>
+                  <th>TOTAL</th>
+                  <th>STATUS</th>
+                  <th>PLACED</th>
+                  <th style={{ textAlign: 'right' }}>ACTION</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((o) => (
                   <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedOrder(o)}>
                     <td>
-                      <div style={{ fontWeight: 600, color: 'var(--lime)', fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                      <div style={{ color: 'var(--muted)', fontFamily: 'monospace', fontSize: '0.8125rem' }}>
                         #{o.order_code}
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--muted)', textTransform: 'capitalize' }}>
-                        {o.payment_method?.replace('_', ' ') || 'Pay on delivery'}
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontWeight: 600, color: 'var(--ink)' }}>{o.customer_name}</div>
-                      {o.customer_phone && <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{o.customer_phone}</div>}
+                      <div style={{ fontWeight: 500, color: 'var(--ink)' }}>{o.customer_name}</div>
                     </td>
-                    <td style={{ maxWidth: '280px', color: 'var(--muted)', fontSize: '0.8125rem' }}>
+                    <td style={{ color: 'var(--ink)', fontSize: '0.8125rem' }}>
                       {o.items?.map((it) => `${it.product_name} × ${it.quantity}`).join(', ') || 'Item'}
                     </td>
-                    <td style={{ fontWeight: 600, fontFamily: 'var(--font-serif)', fontSize: '0.95rem' }}>
+                    <td style={{ fontWeight: 500, color: 'var(--ink)' }}>
                       ₦{Number(o.total_amount).toLocaleString()}
                     </td>
                     <td>
-                      <OrderStatusBadge status={o.status} />
+                      <span 
+                        className={`badge ${
+                          o.status === 'pending' ? 'badge-pending' :
+                          o.status === 'in_progress' ? 'badge-progress' :
+                          o.status === 'accepted' ? 'badge-progress' :
+                          o.status === 'ready' ? 'badge-ready' :
+                          o.status === 'completed' ? 'badge-completed' : 'badge-cancelled'
+                        }`}
+                        style={{ textTransform: 'capitalize' }}
+                      >
+                        {o.status === 'in_progress' ? 'In progress' : o.status}
+                      </span>
                     </td>
                     <td style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                      {new Date(o.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}{' '}
                       {new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}>
-                        {renderStatusAction(o)}
-                        <button
-                          onClick={() => setSelectedOrder(o)}
-                          className="btn btn-ghost"
-                          style={{ padding: '0.3rem', color: 'var(--muted)' }}
-                          title="View order details"
-                        >
-                          <Eye size={15} />
-                        </button>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'flex-end' }}>
+                        {o.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleUpdateStatus(o.id, 'accepted')}
+                              disabled={actionLoading === o.id}
+                              className="btn btn-primary"
+                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => handleUpdateStatus(o.id, 'cancelled')}
+                              disabled={actionLoading === o.id}
+                              className="btn btn-outline"
+                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', color: 'var(--muted)', borderColor: 'var(--line)' }}
+                            >
+                              Decline
+                            </button>
+                          </>
+                        )}
+                        {o.status === 'accepted' && (
+                          <button
+                            onClick={() => handleUpdateStatus(o.id, 'in_progress')}
+                            disabled={actionLoading === o.id}
+                            className="btn btn-outline"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', color: 'var(--lime)', borderColor: 'var(--lime)' }}
+                          >
+                            Start progress
+                          </button>
+                        )}
+                        {o.status === 'in_progress' && (
+                          <button
+                            onClick={() => handleUpdateStatus(o.id, 'ready')}
+                            disabled={actionLoading === o.id}
+                            className="btn btn-primary"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                          >
+                            Mark ready
+                          </button>
+                        )}
+                        {o.status === 'ready' && (
+                          <button
+                            onClick={() => handleUpdateStatus(o.id, 'completed')}
+                            disabled={actionLoading === o.id}
+                            className="btn btn-outline"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', color: 'var(--lime)', borderColor: 'var(--lime)' }}
+                          >
+                            Mark completed
+                          </button>
+                        )}
+                        {(o.status === 'completed' || o.status === 'cancelled') && (
+                          <button
+                            onClick={() => setSelectedOrder(o)}
+                            className="btn btn-outline"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', color: 'var(--muted)', borderColor: 'var(--line)' }}
+                          >
+                            View
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -291,19 +291,32 @@ export const Orders = () => {
                         </div>
                       </div>
 
-                      {/* Right side: Status Badge, Total Amount, Review Action, Expand Details Button */}
+                      {/* Right side: Fulfillment Status, Payment Status, Total Amount, Review Action */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                        <OrderStatusBadge status={order.status} />
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                          <OrderStatusBadge status={order.status} />
+                          <span style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>
+                            {order.status === 'pending' ? 'Waiting for vendor to accept' :
+                             order.status === 'accepted' ? 'Vendor accepted' :
+                             order.status === 'in_progress' ? 'Being prepared' :
+                             order.status === 'ready' ? 'Ready for pickup/dispatch' :
+                             order.status === 'completed' ? 'Delivered' : 'Order closed'}
+                          </span>
+                        </div>
 
-                        <div style={{ textAlign: 'right', minWidth: '90px' }}>
+                        <div style={{ textAlign: 'right', minWidth: '95px' }}>
                           <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 600, color: 'var(--ink)' }}>
                             ₦{Number(order.total_amount).toLocaleString()}
                           </div>
                           <div style={{ fontSize: '0.72rem', marginTop: '0.15rem' }}>
                             {order.payment_status === 'paid' ? (
-                              <span style={{ color: 'var(--lime)', fontWeight: 600 }}>✓ Paid (Paystack)</span>
+                              <span style={{ color: 'var(--lime)', fontWeight: 600, background: 'rgba(185, 255, 102, 0.1)', padding: '0.1rem 0.4rem', borderRadius: '3px' }}>
+                                ✓ Paid (Paystack)
+                              </span>
                             ) : (
-                              <span style={{ color: 'var(--muted)' }}>Pay on Delivery</span>
+                              <span style={{ color: 'var(--status-pending)', fontWeight: 500, background: 'rgba(245, 158, 11, 0.1)', padding: '0.1rem 0.4rem', borderRadius: '3px' }}>
+                                Pay on Delivery
+                              </span>
                             )}
                           </div>
                         </div>

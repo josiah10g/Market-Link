@@ -384,40 +384,30 @@ export const VendorDashboard = () => {
               </div>
             </div>
 
-            {/* Incoming Orders Section matching mockup */}
+            {/* Incoming Orders Section matching user screenshot */}
             <div id="orders" style={{ marginBottom: '3rem', scrollMarginTop: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 className="heading-display" style={{ fontSize: '1.25rem' }}>
-                  Incoming orders preview
+                  Incoming orders
                 </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <Link
-                    to="/vendor/orders"
-                    style={{ fontSize: '0.8125rem', color: 'var(--lime)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                  >
-                    View all orders ({orders.length}) →
-                  </Link>
-                  <button
-                    onClick={fetchData}
-                    className="btn btn-outline"
-                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-                    title="Refresh orders"
-                  >
-                    <RefreshCw size={13} /> Refresh
-                  </button>
-                </div>
+                <Link
+                  to="/vendor/orders"
+                  style={{ fontSize: '0.8125rem', color: 'var(--lime)', fontWeight: 500 }}
+                >
+                  View all orders
+                </Link>
               </div>
 
               <div className="table-container">
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Customer</th>
-                      <th>Items</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                      <th>Placed</th>
-                      <th style={{ textAlign: 'right' }}>Action</th>
+                      <th>CUSTOMER</th>
+                      <th>ITEMS</th>
+                      <th>TOTAL</th>
+                      <th>STATUS</th>
+                      <th>PLACED</th>
+                      <th style={{ textAlign: 'right' }}>ACTION</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -436,20 +426,101 @@ export const VendorDashboard = () => {
                               #{o.order_code}
                             </div>
                           </td>
-                          <td style={{ maxWidth: '280px', color: 'var(--muted)' }}>
+                          <td style={{ color: 'var(--ink)' }}>
                             {o.items?.map((it) => `${it.product_name} × ${it.quantity}`).join(', ') || 'Items'}
                           </td>
-                          <td style={{ fontWeight: 600 }}>
+                          <td style={{ fontWeight: 600, color: 'var(--ink)' }}>
                             ₦{Number(o.total_amount).toLocaleString()}
                           </td>
                           <td>
-                            <OrderStatusBadge status={o.status} />
+                            <span 
+                              className={`badge ${
+                                o.status === 'pending' ? 'badge-pending' :
+                                o.status === 'in_progress' ? 'badge-progress' :
+                                o.status === 'accepted' ? 'badge-progress' :
+                                o.status === 'ready' ? 'badge-ready' :
+                                o.status === 'completed' ? 'badge-completed' : 'badge-cancelled'
+                              }`}
+                              style={{ textTransform: 'capitalize' }}
+                            >
+                              {o.status === 'in_progress' ? 'Preparing' : o.status}
+                            </span>
                           </td>
                           <td style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
                             {new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </td>
                           <td style={{ textAlign: 'right' }}>
                             {renderStatusAction(o)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Low stock Section matching user screenshot */}
+            <div id="low-stock" style={{ marginBottom: '3rem', scrollMarginTop: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 className="heading-display" style={{ fontSize: '1.25rem' }}>
+                  Low stock
+                </h3>
+                <Link
+                  to="/vendor/products"
+                  style={{ fontSize: '0.8125rem', color: 'var(--lime)', fontWeight: 500 }}
+                >
+                  Manage inventory
+                </Link>
+              </div>
+
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>PRODUCT</th>
+                      <th>CATEGORY</th>
+                      <th>STOCK LEFT</th>
+                      <th>PRICE</th>
+                      <th style={{ textAlign: 'right' }}>ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.filter(p => p.stock_quantity <= 5).length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--lime)' }}>
+                          All product inventory is well stocked.
+                        </td>
+                      </tr>
+                    ) : (
+                      products.filter(p => p.stock_quantity <= 5).slice(0, 5).map((prod) => (
+                        <tr key={prod.id}>
+                          <td style={{ fontWeight: 600, color: 'var(--ink)' }}>
+                            {prod.name}
+                          </td>
+                          <td style={{ color: 'var(--muted)' }}>
+                            {prod.category}
+                          </td>
+                          <td style={{ fontWeight: 600, color: prod.stock_quantity <= 2 ? 'var(--status-cancelled)' : 'var(--status-pending)' }}>
+                            {prod.stock_quantity}
+                          </td>
+                          <td style={{ fontWeight: 600, color: 'var(--ink)' }}>
+                            ₦{Number(prod.price).toLocaleString()}
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              onClick={() => openEditProduct(prod)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--lime)',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Restock →
+                            </button>
                           </td>
                         </tr>
                       ))

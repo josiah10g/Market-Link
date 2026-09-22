@@ -22,7 +22,12 @@ const VALID_TRANSITIONS = {
 // @route   POST /api/orders
 // @access  Private (Customer only)
 const createOrder = asyncHandler(async (req, res) => {
-  const { vendor_id, items, delivery_address, notes, payment_method, payment_reference } = req.body;
+  const { items, delivery_address, notes, payment_method, payment_reference } = req.body;
+  const vendor_id = parseInt(req.body.vendor_id, 10);
+
+  if (!vendor_id || isNaN(vendor_id)) {
+    return res.status(400).json({ success: false, message: 'A valid vendor ID is required' });
+  }
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ success: false, message: 'Cart cannot be empty' });
@@ -45,10 +50,11 @@ const createOrder = asyncHandler(async (req, res) => {
     const validatedItems = [];
 
     for (const item of items) {
-      const { product_id, quantity } = item;
-      if (!quantity || quantity <= 0) {
+      const product_id = parseInt(item.product_id, 10);
+      const quantity = parseInt(item.quantity, 10);
+      if (isNaN(product_id) || isNaN(quantity) || quantity <= 0) {
         await client.query('ROLLBACK');
-        return res.status(400).json({ success: false, message: 'Invalid item quantity' });
+        return res.status(400).json({ success: false, message: 'Invalid product ID or quantity in cart' });
       }
 
       // Row-level lock: prevents race conditions between concurrent orders

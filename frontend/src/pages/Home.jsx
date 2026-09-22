@@ -14,33 +14,38 @@ export const Home = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchHomeData = async () => {
       try {
         setLoading(true);
-        const [vendorsRes, productsRes, statsRes] = await Promise.all([
+        const results = await Promise.allSettled([
           api.get('/vendors?limit=4'),
           api.get('/products?limit=4'),
           api.get('/platform/stats')
         ]);
 
-        if (vendorsRes.data.success) {
-          setVendors(vendorsRes.data.data.slice(0, 3));
+        if (!isMounted) return;
+
+        const [vendorsRes, productsRes, statsRes] = results;
+
+        if (vendorsRes.status === 'fulfilled' && vendorsRes.value?.data?.success) {
+          setVendors(vendorsRes.value.data.data.slice(0, 3));
         }
-        if (productsRes.data.success) {
-          setPopularProducts(productsRes.data.data);
+        if (productsRes.status === 'fulfilled' && productsRes.value?.data?.success) {
+          setPopularProducts(productsRes.value.data.data);
         }
-        if (statsRes.data.success) {
-          setPlatformStats(statsRes.data);
+        if (statsRes.status === 'fulfilled' && statsRes.value?.data?.success) {
+          setPlatformStats(statsRes.value.data);
         }
       } catch (err) {
         console.error('Home data load error:', err);
-        setError('Could not connect to MarketLink services. Please ensure backend is running.');
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchHomeData();
+    return () => { isMounted = false; };
   }, []);
 
   return (

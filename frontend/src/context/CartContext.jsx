@@ -15,7 +15,12 @@ export const CartProvider = ({ children }) => {
   const [activeVendor, setActiveVendor] = useState(() => {
     try {
       const saved = localStorage.getItem('marketlink_cart_vendor');
-      return saved ? JSON.parse(saved) : null;
+      if (saved) return JSON.parse(saved);
+      const cartItems = JSON.parse(localStorage.getItem('marketlink_cart') || '[]');
+      if (cartItems.length > 0 && cartItems[0].vendor_id) {
+        return { id: cartItems[0].vendor_id, business_name: 'Storefront' };
+      }
+      return null;
     } catch {
       return null;
     }

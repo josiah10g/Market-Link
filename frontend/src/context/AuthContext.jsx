@@ -4,8 +4,18 @@ import api from '../api/axios';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('marketlink_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  // If there is no token in localStorage, loading is immediately false! No waiting!
+  const [loading, setLoading] = useState(() => {
+    return !!localStorage.getItem('marketlink_token') && !localStorage.getItem('marketlink_user');
+  });
 
   useEffect(() => {
     const initAuth = async () => {
@@ -14,6 +24,11 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
+
+      // Safety timer: prevent indefinite loading spinner / black screen if backend is cold
+      const fallbackTimer = setTimeout(() => {
+        setLoading(false);
+      }, 3000);
 
       try {
         const { data } = await api.get('/auth/me');
@@ -27,6 +42,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('marketlink_user');
         setUser(null);
       } finally {
+        clearTimeout(fallbackTimer);
         setLoading(false);
       }
     };
