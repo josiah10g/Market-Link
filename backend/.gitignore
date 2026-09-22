@@ -1,0 +1,17 @@
+# Node dependencies
+node_modules/
+
+# Environment Variables (CRITICAL SECURITY)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS and Editor
+.DS_Store
+.idea/
+.vscode/

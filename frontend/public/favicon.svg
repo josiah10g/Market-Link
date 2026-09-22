@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Rounded dark background matching visual reference -->
+  <rect width="512" height="512" rx="112" fill="#0B0F0E"/>
+  <!-- Fraunces style serif M monogram in vibrant lime #B9FF66 -->
+  <path fill="#B9FF66" d="M110 380 V156 H172 L256 298 L340 156 H402 V380 H354 V218 L272 356 H240 L158 218 V380 Z"/>
+</svg>
