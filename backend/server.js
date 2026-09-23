@@ -31,11 +31,25 @@ app.use(cors({
   origin: process.env.CLIENT_URL || '*',
   credentials: true
 }));
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
-// Health check endpoint
+// Root & Health check endpoints for Railway / cloud monitoring
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    platform: 'MarketLink API',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'online', platform: 'MarketLink API' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
