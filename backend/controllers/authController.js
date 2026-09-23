@@ -378,6 +378,9 @@ const updateProfile = asyncHandler(async (req, res) => {
       ...rows[0],
       avatar_url: avatar_url || rows[0]?.avatar_url || null
     }
+  });
+});
+
 // @desc    Direct password reset without SMTP requirement (Supabase & Postgres sync)
 // @route   POST /api/auth/reset-password-direct
 // @access  Public
