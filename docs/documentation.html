@@ -3,104 +3,434 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MarketLink — Documentation Hub</title>
+<title>MarketLink — Full Project Documentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0B0F0E; --surface:#121816; --surface-2:#171F1C; --line:#232D29;
     --lime:#B9FF66; --lime-dim:#8FD84A; --ink:#EDEFEC; --muted:#8B978F;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.65;}
-  h1,h2,.brand{font-family:'Fraunces',serif; font-optical-sizing:auto;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.7;}
+  h1,h2,h3,.brand{font-family:'Fraunces',serif; font-optical-sizing:auto;}
+  code, pre{font-family:'JetBrains Mono', monospace;}
 
-  nav{display:flex; align-items:center; justify-content:space-between; padding:22px 48px; border-bottom:1px solid var(--line);}
-  .brand{font-weight:700; font-size:1.2rem; letter-spacing:-0.02em; color:var(--ink);}
+  .layout{display:grid; grid-template-columns:250px 1fr; min-height:100vh;}
+  .toc{border-right:1px solid var(--line); padding:32px 24px; position:sticky; top:0; height:100vh; overflow-y:auto;}
+  .brand{font-weight:700; font-size:1.15rem; margin-bottom:6px; text-decoration:none; color:var(--ink); display:block;}
   .brand span{color:var(--lime);}
+  .brand-tag{font-size:0.72rem; color:var(--muted); margin-bottom:32px; display:block;}
+  .toc-label{font-size:0.7rem; color:#4B564F; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; margin-top:22px;}
+  .toc-label:first-of-type{margin-top:0;}
+  .toc a{display:block; color:var(--muted); text-decoration:none; font-size:0.83rem; padding:5px 0 5px 10px; border-left:2px solid transparent;}
+  .toc a:hover{color:var(--ink); border-left-color:var(--line);}
+  .toc a.sub{font-size:0.78rem; padding-left:20px; color:#6E7A72;}
 
-  .hero{padding:64px 48px 48px; max-width:760px;}
-  .eyebrow{font-size:0.85rem; color:var(--lime); margin-bottom:16px; padding-left:14px; border-left:2px solid var(--lime);}
-  h1{font-size:2.4rem; font-weight:600; margin-bottom:14px;}
-  .hero p{color:var(--muted); font-size:1rem;}
+  .content{padding:64px 72px 120px; max-width:920px;}
 
-  .badge-row{display:flex; gap:8px; flex-wrap:wrap; padding:0 48px 48px;}
+  .cover{margin-bottom:72px; padding-bottom:48px; border-bottom:1px solid var(--line);}
+  .cover .eyebrow{font-size:0.85rem; color:var(--lime); margin-bottom:16px; padding-left:14px; border-left:2px solid var(--lime);}
+  .cover h1{font-size:2.8rem; font-weight:600; margin-bottom:14px;}
+  .cover .lead{color:var(--muted); font-size:1.08rem; max-width:640px; margin-bottom:24px;}
+  .badge-row{display:flex; gap:8px; flex-wrap:wrap;}
   .tech-badge{background:var(--surface); border:1px solid var(--line); color:var(--ink); font-size:0.78rem; padding:5px 12px; border-radius:20px;}
 
-  .doc-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:1px; background:var(--line); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
-  .doc-card{background:var(--bg); padding:32px 40px; text-decoration:none; color:var(--ink); transition:background .15s;}
-  .doc-card:hover{background:var(--surface);}
-  .doc-num{font-size:0.76rem; color:var(--lime); font-weight:600; margin-bottom:10px;}
-  .doc-card h2{font-size:1.2rem; font-weight:600; margin-bottom:8px;}
-  .doc-card p{color:var(--muted); font-size:0.88rem;}
-  .doc-card .arrow{color:var(--lime); font-size:0.82rem; margin-top:14px; display:inline-block;}
+  .doc-section{margin-bottom:80px; padding-bottom:8px;}
+  .section-tag{font-size:0.8rem; color:var(--lime); font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.04em;}
+  .doc-section h1.section-title{font-size:2rem; font-weight:600; margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid var(--line);}
 
-  .setup-section{padding:56px 48px; max-width:760px;}
-  .setup-section h2{font-size:1.3rem; font-weight:600; margin-bottom:18px;}
-  pre{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:16px 18px; margin:0 0 16px; overflow-x:auto; font-size:0.82rem; color:var(--ink); font-family:'JetBrains Mono', monospace;}
-  .setup-section p{color:var(--muted); font-size:0.9rem; margin-bottom:14px;}
+  .content h2{font-size:1.35rem; font-weight:600; margin-top:44px; margin-bottom:16px;}
+  .content h3{font-size:1.02rem; font-weight:600; margin-top:26px; margin-bottom:10px;}
+  .content p{color:#C7CDC9; margin-bottom:14px; font-size:0.96rem;}
+  .content ul, .content ol{margin:0 0 16px 22px; color:#C7CDC9; font-size:0.96rem;}
+  .content li{margin-bottom:6px;}
+  .content strong{color:var(--ink);}
+  .content code{background:var(--surface); padding:2px 7px; border-radius:3px; font-size:0.84rem; color:var(--lime);}
 
-  footer{padding:32px 48px; border-top:1px solid var(--line); color:var(--muted); font-size:0.82rem; text-align:center;}
+  table{width:100%; border-collapse:collapse; margin:16px 0 28px; font-size:0.88rem;}
+  th{text-align:left; color:var(--muted); font-weight:500; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.03em; padding-bottom:10px; border-bottom:1px solid var(--line);}
+  td{padding:10px 12px 10px 0; border-bottom:1px solid var(--line); color:#C7CDC9; vertical-align:top;}
+  td:first-child, th:first-child{padding-left:0;}
+  td code{background:var(--surface); padding:1px 6px; border-radius:3px; color:var(--lime); font-size:0.8rem;}
+
+  pre{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:16px 18px; margin:16px 0 24px; overflow-x:auto; font-size:0.82rem; color:var(--ink);}
+
+  .callout{background:rgba(185,255,102,0.06); border:1px solid rgba(185,255,102,0.25); border-radius:6px; padding:16px 18px; margin:20px 0; font-size:0.9rem; color:#C7CDC9;}
+  .callout b{color:var(--lime);}
+
+  .journey-step{display:flex; gap:16px; align-items:flex-start; padding:12px 0; border-top:1px solid var(--line); font-size:0.92rem;}
+  .journey-step:last-child{border-bottom:1px solid var(--line);}
+  .journey-num{width:24px; height:24px; border-radius:50%; background:var(--surface); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:0.72rem; color:var(--lime); flex-shrink:0; font-weight:600;}
+  .journey-step p{margin:0; color:#C7CDC9;}
+
+  .endpoint{display:flex; gap:12px; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--line); font-size:0.85rem;}
+  .method{font-weight:600; width:50px; flex-shrink:0;}
+  .method.get{color:var(--lime);} .method.post{color:#E8B65A;} .method.put{color:#7AA7D9;}
+  .endpoint code{color:var(--ink); background:none; padding:0;}
+  .endpoint .desc{color:var(--muted); margin-left:auto; text-align:right;}
+
+  .arch-diagram{display:flex; flex-direction:column; margin:24px 0 32px; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .arch-tier{padding:18px 22px; border-bottom:1px solid var(--line);}
+  .arch-tier:last-child{border-bottom:none;}
+  .arch-tier-label{font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;}
+  .arch-boxes{display:flex; gap:10px; flex-wrap:wrap;}
+  .arch-box{background:var(--surface); border:1px solid var(--line); border-radius:5px; padding:8px 14px; font-size:0.82rem;}
+  .arch-box.accent{border-color:rgba(185,255,102,0.4); color:var(--lime);}
+  .arch-arrow{text-align:center; color:var(--muted); font-size:0.78rem; padding:3px 0;}
+
+  .state-machine{display:flex; align-items:center; gap:0; margin:20px 0 8px; flex-wrap:wrap;}
+  .state-node{background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:7px 16px; font-size:0.83rem; font-weight:500;}
+  .state-node.terminal{border-color:rgba(217,120,120,0.3); color:#D97878;}
+  .state-arrow{color:var(--muted); padding:0 8px; font-size:0.88rem;}
+
+  .erd{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin:24px 0 36px;}
+  .er-card{background:var(--surface); border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .er-head{background:var(--surface-2); padding:9px 13px; font-weight:600; font-size:0.85rem; border-bottom:1px solid var(--line);}
+  .er-field{display:flex; justify-content:space-between; padding:6px 13px; font-size:0.74rem; border-bottom:1px solid var(--line);}
+  .er-field:last-child{border-bottom:none;}
+  .er-field .fname{color:var(--ink);} .er-field .ftype{color:var(--muted);}
+  .er-field.pk .fname{color:var(--lime);}
+
+  .decision{padding:14px 0; border-top:1px solid var(--line); font-size:0.9rem; color:#C7CDC9;}
+  .decision:last-child{border-bottom:1px solid var(--line);}
+  .decision b{color:var(--ink); display:block; margin-bottom:4px; font-size:0.92rem;}
+
+  .final-callout{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:24px 28px; margin-top:24px; text-align:center; color:var(--muted); font-size:0.9rem;}
 </style>
 </head>
 <body>
-  <nav>
-    <div class="brand">Market<span>Link</span></div>
-  </nav>
+  <div class="layout">
+    <nav class="toc">
+      <a href="#top" class="brand">Market<span>Link</span></a>
+      <span class="brand-tag">Full documentation</span>
 
-  <div class="hero">
-    <div class="eyebrow">Project documentation hub</div>
-    <h1>MarketLink</h1>
-    <p>A multi-vendor booking & order management platform for local service businesses — built for the Code Campus International Full Stack Innovation Project 2026, Digital Economy & Commerce Systems category.</p>
+      <div class="toc-label">01 · Problem Statement</div>
+      <a href="#problem">The Problem</a>
+      <a href="#solution">Proposed Solution</a>
+      <a href="#journey">User Journey</a>
+
+      <div class="toc-label">02 · Documentation</div>
+      <a href="#stack">Tech Stack</a>
+      <a href="#setup">Local Setup</a>
+      <a href="#structure">Project Structure</a>
+      <a href="#api">API Reference</a>
+
+      <div class="toc-label">03 · Architecture</div>
+      <a href="#arch-overview">High-Level Architecture</a>
+      <a href="#auth-flow">Authentication Flow</a>
+      <a href="#state-machine">Order State Machine</a>
+      <a href="#checkout">Checkout Transaction</a>
+
+      <div class="toc-label">04 · Database Schema</div>
+      <a href="#erd">Entity Relationships</a>
+      <a href="#tables">Table Definitions</a>
+      <a href="#indexes">Indexes</a>
+      <a href="#decisions">Design Decisions</a>
+    </nav>
+
+    <main class="content" id="top">
+
+      <div class="cover">
+        <div class="eyebrow">Complete project documentation</div>
+        <h1>MarketLink</h1>
+        <p class="lead">A multi-vendor booking & order management platform for local service businesses — built for the Code Campus International Full Stack Innovation Project 2026, Digital Economy & Commerce Systems category. This document covers the problem statement, technical documentation, system architecture, and database schema in full.</p>
+        <div class="badge-row">
+          <span class="tech-badge">React</span><span class="tech-badge">Tailwind CSS</span><span class="tech-badge">Node.js</span>
+          <span class="tech-badge">Express</span><span class="tech-badge">PostgreSQL</span><span class="tech-badge">Supabase</span>
+          <span class="tech-badge">JWT</span><span class="tech-badge">Nodemailer</span><span class="tech-badge">Paystack</span>
+        </div>
+      </div>
+
+      <!-- ============ 01 PROBLEM STATEMENT ============ -->
+      <section class="doc-section">
+        <div class="section-tag">Part 01</div>
+        <h1 class="section-title">Problem Statement</h1>
+
+        <h2 id="problem">The Problem</h2>
+        <p>Small local businesses — food vendors, tailors, beauty salons, phone repair shops — overwhelmingly rely on informal channels like WhatsApp and phone calls to receive and manage orders. This creates several recurring problems:</p>
+        <ul>
+          <li><strong>Orders get lost</strong> in long WhatsApp threads with no structured record</li>
+          <li><strong>No inventory tracking</strong> — vendors have no reliable way to know what's in stock in real time</li>
+          <li><strong>No order history</strong> — neither vendor nor customer has a searchable record of past transactions</li>
+          <li><strong>No status visibility</strong> — customers can't track an order without directly messaging the vendor</li>
+          <li><strong>Lost revenue</strong> — missed messages mean missed sales, and disorganized fulfillment damages trust</li>
+        </ul>
+        <p>This is the daily operating reality for most small businesses in cities like Abuja, who cannot justify enterprise point-of-sale software, but still need more structure than a chat app offers.</p>
+
+        <h3>Target Users</h3>
+        <table>
+          <tr><th>Role</th><th>Who they are</th><th>What they need</th></tr>
+          <tr><td>Customer</td><td>Anyone browsing and ordering from local vendors</td><td>Easy discovery, reliable ordering, order tracking, history</td></tr>
+          <tr><td>Vendor</td><td>Small business owner (food, fashion, beauty, repair)</td><td>Storefront, inventory control, manageable order queue</td></tr>
+          <tr><td>Admin</td><td>Platform operator</td><td>Vendor vetting, platform oversight, dispute resolution</td></tr>
+        </table>
+
+        <h2 id="solution">Proposed Solution</h2>
+        <p>MarketLink gives every vendor a real digital storefront with live inventory, and gives every customer a structured ordering and tracking experience — replacing the informal WhatsApp order with a real pipeline:</p>
+        <div class="callout"><b>Pending → Accepted → In Progress → Ready → Completed</b> — every transition enforced server-side, not just cosmetic.</div>
+
+        <h3>What Makes MarketLink Different</h3>
+        <ul>
+          <li><strong>Inventory-aware ordering</strong> — not just a listing/contact-seller page; stock is real and enforced</li>
+          <li><strong>Role-based dashboards</strong> — customer, vendor, and admin each get a purpose-built interface</li>
+          <li><strong>A real order lifecycle</strong> with server-side validated state transitions</li>
+          <li><strong>Built for any local business category</strong>, not just food</li>
+        </ul>
+
+        <h2 id="journey">Core User Journey</h2>
+        <div class="journey-step"><div class="journey-num">1</div><p>Customer registers and browses vendor storefronts or the full product catalog</p></div>
+        <div class="journey-step"><div class="journey-num">2</div><p>Customer adds items to cart (single-vendor cart) and proceeds to checkout</p></div>
+        <div class="journey-step"><div class="journey-num">3</div><p>Customer provides delivery address, selects payment method, and places the order</p></div>
+        <div class="journey-step"><div class="journey-num">4</div><p>Vendor receives the order in their dashboard and moves it through the status pipeline</p></div>
+        <div class="journey-step"><div class="journey-num">5</div><p>Customer tracks live status and receives notifications on every update</p></div>
+        <div class="journey-step"><div class="journey-num">6</div><p>Once completed, the customer can leave a review; the vendor's rating recalculates automatically</p></div>
+      </section>
+
+      <!-- ============ 02 DOCUMENTATION ============ -->
+      <section class="doc-section">
+        <div class="section-tag">Part 02</div>
+        <h1 class="section-title">Project Documentation</h1>
+
+        <h2 id="stack">Tech Stack</h2>
+        <table>
+          <tr><th>Layer</th><th>Technology</th></tr>
+          <tr><td>Frontend</td><td>React, Tailwind CSS, React Router, Context API</td></tr>
+          <tr><td>Backend</td><td>Node.js, Express, JWT auth, express-validator</td></tr>
+          <tr><td>Database</td><td>PostgreSQL (Supabase) via <code>pg</code></td></tr>
+          <tr><td>Email</td><td>Nodemailer (SMTP)</td></tr>
+          <tr><td>Payments</td><td>Paystack (test mode)</td></tr>
+          <tr><td>Deployment</td><td>Vercel/Netlify (frontend), Render/Railway (backend + DB)</td></tr>
+        </table>
+
+        <h2 id="setup">Local Setup</h2>
+        <h3>1. Install dependencies</h3>
+        <pre>cd backend && npm install
+cd ../frontend && npm install</pre>
+        <h3>2. Configure environment</h3>
+        <p>Copy <code>.env.example</code> to <code>.env</code> in both <code>backend/</code> and <code>frontend/</code>.</p>
+        <pre>DATABASE_URL=postgresql://...supabase.co:5432/postgres
+JWT_SECRET=your_long_random_string
+SMTP_USER=youremail@gmail.com
+SMTP_PASS=your_gmail_app_password
+PAYSTACK_SECRET_KEY=sk_test_xxxxx</pre>
+        <h3>3. Migrate & seed</h3>
+        <pre>cd backend
+npm run migrate
+npm run seed</pre>
+        <h3>4. Run the app</h3>
+        <pre>cd backend && npm run dev     # http://localhost:5000
+cd frontend && npm run dev    # http://localhost:5173</pre>
+        <div class="callout"><b>Note:</b> If SMTP/Paystack credentials are omitted, the app degrades gracefully — emails log to console, and "Pay on Delivery" still works fully.</div>
+
+        <h2 id="structure">Project Structure</h2>
+        <pre>backend/
+  config/db.js          Postgres connection pool
+  controllers/           Business logic per resource
+  middleware/             auth, validation, error handling
+  routes/                 Express route declarations
+  utils/                  order code gen, email service
+  migrate.js              DDL schema creation
+  seed.js                 demo data seeder
+
+frontend/src/
+  api/axios.js            configured HTTP client
+  context/                AuthContext, CartContext
+  components/             Navbar, Sidebar, ProductCard, etc.
+  pages/                  route-level pages</pre>
+
+        <h2 id="api">API Reference</h2>
+        <h3>Auth</h3>
+        <div class="endpoint"><span class="method post">POST</span><code>/api/auth/register</code><span class="desc">Create account (customer or vendor)</span></div>
+        <div class="endpoint"><span class="method post">POST</span><code>/api/auth/login</code><span class="desc">Login, returns JWT</span></div>
+        <div class="endpoint"><span class="method get">GET</span><code>/api/auth/me</code><span class="desc">Current user profile</span></div>
+        <h3>Vendors</h3>
+        <div class="endpoint"><span class="method get">GET</span><code>/api/vendors</code><span class="desc">List approved vendors</span></div>
+        <div class="endpoint"><span class="method post">POST</span><code>/api/vendors</code><span class="desc">Create storefront (vendor)</span></div>
+        <div class="endpoint"><span class="method put">PUT</span><code>/api/vendors/:id/status</code><span class="desc">Approve/suspend (admin)</span></div>
+        <h3>Products</h3>
+        <div class="endpoint"><span class="method get">GET</span><code>/api/products</code><span class="desc">Search, filter, paginate</span></div>
+        <div class="endpoint"><span class="method post">POST</span><code>/api/products</code><span class="desc">Create product (vendor)</span></div>
+        <div class="endpoint"><span class="method put">PUT</span><code>/api/products/:id</code><span class="desc">Update (owner only)</span></div>
+        <h3>Orders</h3>
+        <div class="endpoint"><span class="method post">POST</span><code>/api/orders</code><span class="desc">Transactional checkout</span></div>
+        <div class="endpoint"><span class="method get">GET</span><code>/api/orders/mine</code><span class="desc">Customer order history</span></div>
+        <div class="endpoint"><span class="method get">GET</span><code>/api/orders/vendor</code><span class="desc">Vendor incoming orders</span></div>
+        <div class="endpoint"><span class="method put">PUT</span><code>/api/orders/:id/status</code><span class="desc">State-machine validated transition</span></div>
+        <h3>Reviews & Notifications</h3>
+        <div class="endpoint"><span class="method post">POST</span><code>/api/reviews</code><span class="desc">Completed orders only</span></div>
+        <div class="endpoint"><span class="method get">GET</span><code>/api/notifications</code><span class="desc">User's notifications</span></div>
+
+        <h3>Authentication Details</h3>
+        <p>MarketLink uses custom JWT-based authentication — not Supabase Auth. Supabase is used solely as the hosted PostgreSQL database.</p>
+        <ol>
+          <li>Password is hashed with <code>bcryptjs</code> at registration</li>
+          <li>On login, the backend verifies the hash and issues a signed JWT containing the user's id and role</li>
+          <li>The frontend stores the JWT in <code>localStorage</code> and attaches it as a Bearer token to every request</li>
+          <li>Every protected route runs <code>protect</code> then <code>requireRole()</code> before reaching the controller</li>
+        </ol>
+      </section>
+
+      <!-- ============ 03 ARCHITECTURE ============ -->
+      <section class="doc-section">
+        <div class="section-tag">Part 03</div>
+        <h1 class="section-title">System Architecture</h1>
+
+        <h2 id="arch-overview">High-Level Architecture</h2>
+        <div class="arch-diagram">
+          <div class="arch-tier">
+            <div class="arch-tier-label">Frontend — React + Tailwind</div>
+            <div class="arch-boxes"><div class="arch-box">Customer UI</div><div class="arch-box">Vendor Dashboard</div><div class="arch-box">Admin Console</div></div>
+          </div>
+          <div class="arch-arrow">↓ HTTPS / REST (JWT Bearer token) ↓</div>
+          <div class="arch-tier">
+            <div class="arch-tier-label">Backend — Node.js + Express</div>
+            <div class="arch-boxes"><div class="arch-box accent">Auth Middleware (JWT + RBAC)</div><div class="arch-box">Validation</div><div class="arch-box">Controllers</div></div>
+          </div>
+          <div class="arch-arrow">↓ SQL (pg pool) ↓</div>
+          <div class="arch-tier">
+            <div class="arch-tier-label">Database — PostgreSQL (Supabase)</div>
+            <div class="arch-boxes"><div class="arch-box">users</div><div class="arch-box">vendors</div><div class="arch-box">products</div><div class="arch-box">orders / order_items</div><div class="arch-box">reviews</div><div class="arch-box">notifications</div></div>
+          </div>
+          <div class="arch-tier">
+            <div class="arch-tier-label">External services</div>
+            <div class="arch-boxes"><div class="arch-box">Nodemailer → SMTP email</div><div class="arch-box">Paystack → payments + webhook</div></div>
+          </div>
+        </div>
+
+        <h3>Layer Responsibilities</h3>
+        <p><strong>Frontend</strong> — renders role-specific experiences and holds client state via Context API (<code>AuthContext</code>, <code>CartContext</code>). Never talks to the database directly; all access goes through the REST API.</p>
+        <p><strong>Backend</strong> — middleware (<code>protect</code>, <code>requireRole()</code>, <code>validate</code>, <code>errorHandler</code>) plus one controller per resource containing all business logic, including the order state machine and atomic checkout transaction.</p>
+        <p><strong>Database</strong> — fully relational schema with foreign keys, CHECK constraints, and unique constraints. All financially significant operations run inside explicit SQL transactions with row-level locking.</p>
+
+        <h2 id="auth-flow">Authentication Flow</h2>
+        <div class="journey-step"><div class="journey-num">1</div><p>User submits login form on the frontend</p></div>
+        <div class="journey-step"><div class="journey-num">2</div><p><code>POST /api/auth/login</code> is sent to the backend</p></div>
+        <div class="journey-step"><div class="journey-num">3</div><p>Backend looks up the user by email, retrieves <code>password_hash</code></p></div>
+        <div class="journey-step"><div class="journey-num">4</div><p><code>bcrypt.compare()</code> verifies the password against the hash</p></div>
+        <div class="journey-step"><div class="journey-num">5</div><p>Backend returns a JWT signed with the user's id and role</p></div>
+        <div class="journey-step"><div class="journey-num">6</div><p>Frontend stores the JWT in <code>localStorage</code>, attaches it as a Bearer token to every future request</p></div>
+        <div class="journey-step"><div class="journey-num">7</div><p>Every protected route runs <code>protect()</code> then <code>requireRole()</code> before reaching the controller — enforced server-side regardless of what the UI shows</p></div>
+
+        <h2 id="state-machine">Order State Machine</h2>
+        <div class="state-machine">
+          <div class="state-node">pending</div><div class="state-arrow">→</div>
+          <div class="state-node">accepted</div><div class="state-arrow">→</div>
+          <div class="state-node">in_progress</div><div class="state-arrow">→</div>
+          <div class="state-node">ready</div><div class="state-arrow">→</div>
+          <div class="state-node">completed</div>
+        </div>
+        <div class="state-machine">
+          <div class="state-node terminal">cancelled</div>
+          <span style="color:var(--muted); font-size:0.85rem; margin-left:12px;">— reachable from pending, accepted, or in_progress</span>
+        </div>
+        <p>Transitions are validated server-side against an explicit allow-list in <code>orderController.js</code>. Any request to move an order to a non-adjacent or invalid state is rejected with <code>400 Bad Request</code> before it reaches the database.</p>
+
+        <h2 id="checkout">Checkout Transaction Flow</h2>
+        <div class="journey-step"><div class="journey-num">1</div><p>Client sends <code>vendor_id</code>, <code>delivery_address</code>, and a list of <code>{ product_id, quantity }</code></p></div>
+        <div class="journey-step"><div class="journey-num">2</div><p>Backend opens a database transaction (<code>BEGIN</code>)</p></div>
+        <div class="journey-step"><div class="journey-num">3</div><p>For each item: <code>SELECT ... FOR UPDATE</code> locks the product row and checks sufficient stock</p></div>
+        <div class="journey-step"><div class="journey-num">4</div><p>If any item fails, the entire transaction rolls back (<code>ROLLBACK</code>) — no partial order is ever created</p></div>
+        <div class="journey-step"><div class="journey-num">5</div><p>If all items pass: stock is decremented, the order and its <code>order_items</code> are inserted, a notification is created, and a collision-safe order code is generated</p></div>
+        <div class="journey-step"><div class="journey-num">6</div><p>Transaction commits (<code>COMMIT</code>) — only then is the response sent to the client</p></div>
+        <div class="callout"><b>Guarantee:</b> an order is either fully placed with correctly decremented stock, or not placed at all.</div>
+      </section>
+
+      <!-- ============ 04 DATABASE SCHEMA ============ -->
+      <section class="doc-section">
+        <div class="section-tag">Part 04</div>
+        <h1 class="section-title">Database Schema</h1>
+
+        <h2 id="erd">Entity Relationships</h2>
+        <div class="erd">
+          <div class="er-card"><div class="er-head">users</div>
+            <div class="er-field pk"><span class="fname">id</span><span class="ftype">PK</span></div>
+            <div class="er-field"><span class="fname">email</span><span class="ftype">unique</span></div>
+            <div class="er-field"><span class="fname">password_hash</span><span class="ftype">varchar</span></div>
+            <div class="er-field"><span class="fname">role</span><span class="ftype">check enum</span></div>
+          </div>
+          <div class="er-card"><div class="er-head">vendors</div>
+            <div class="er-field pk"><span class="fname">id</span><span class="ftype">PK</span></div>
+            <div class="er-field"><span class="fname">user_id</span><span class="ftype">FK → users</span></div>
+            <div class="er-field"><span class="fname">status</span><span class="ftype">check enum</span></div>
+            <div class="er-field"><span class="fname">rating</span><span class="ftype">nullable</span></div>
+          </div>
+          <div class="er-card"><div class="er-head">products</div>
+            <div class="er-field pk"><span class="fname">id</span><span class="ftype">PK</span></div>
+            <div class="er-field"><span class="fname">vendor_id</span><span class="ftype">FK → vendors</span></div>
+            <div class="er-field"><span class="fname">stock_quantity</span><span class="ftype">int</span></div>
+            <div class="er-field"><span class="fname">lead_time</span><span class="ftype">varchar</span></div>
+          </div>
+          <div class="er-card"><div class="er-head">orders</div>
+            <div class="er-field pk"><span class="fname">id</span><span class="ftype">PK</span></div>
+            <div class="er-field"><span class="fname">order_code</span><span class="ftype">unique</span></div>
+            <div class="er-field"><span class="fname">customer_id</span><span class="ftype">FK → users</span></div>
+            <div class="er-field"><span class="fname">status</span><span class="ftype">check enum</span></div>
+          </div>
+          <div class="er-card"><div class="er-head">order_items</div>
+            <div class="er-field pk"><span class="fname">id</span><span class="ftype">PK</span></div>
+            <div class="er-field"><span class="fname">order_id</span><span class="ftype">FK → orders</span></div>
+            <div class="er-field"><span class="fname">product_name</span><span class="ftype">snapshot</span></div>
+            <div class="er-field"><span class="fname">quantity</span><span class="ftype">check &gt; 0</span></div>
+          </div>
+          <div class="er-card"><div class="er-head">reviews</div>
+            <div class="er-field pk"><span class="fname">id</span><span class="ftype">PK</span></div>
+            <div class="er-field"><span class="fname">order_id</span><span class="ftype">FK → orders</span></div>
+            <div class="er-field"><span class="fname">rating</span><span class="ftype">check 1-5</span></div>
+            <div class="er-field"><span class="fname">— unique —</span><span class="ftype">(order_id, customer_id)</span></div>
+          </div>
+        </div>
+        <p><strong>Relationships:</strong> users → vendors (1:1) → products (1:many) · users + vendors → orders (many:1 each) → order_items (1:many) · orders → reviews (1:0..1) · users → notifications (1:many)</p>
+
+        <h2 id="tables">Table Definitions</h2>
+        <h3>users</h3>
+        <table>
+          <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+          <tr><td>id</td><td>SERIAL</td><td>PRIMARY KEY</td></tr>
+          <tr><td>email</td><td>VARCHAR(150)</td><td>UNIQUE, NOT NULL</td></tr>
+          <tr><td>password_hash</td><td>VARCHAR(255)</td><td>NOT NULL (bcrypt)</td></tr>
+          <tr><td>role</td><td>VARCHAR(20)</td><td>CHECK IN ('customer','vendor','admin')</td></tr>
+        </table>
+        <h3>vendors</h3>
+        <table>
+          <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+          <tr><td>id</td><td>SERIAL</td><td>PRIMARY KEY</td></tr>
+          <tr><td>user_id</td><td>INT</td><td>REFERENCES users(id) ON DELETE CASCADE</td></tr>
+          <tr><td>status</td><td>VARCHAR(20)</td><td>DEFAULT 'pending', CHECK IN ('pending','approved','suspended')</td></tr>
+          <tr><td>rating</td><td>NUMERIC(2,1)</td><td>DEFAULT NULL — null until first review</td></tr>
+        </table>
+        <h3>orders</h3>
+        <table>
+          <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+          <tr><td>id</td><td>SERIAL</td><td>PRIMARY KEY</td></tr>
+          <tr><td>order_code</td><td>VARCHAR(20)</td><td>UNIQUE, NOT NULL — e.g. ML-3312</td></tr>
+          <tr><td>customer_id</td><td>INT</td><td>REFERENCES users(id) ON DELETE RESTRICT</td></tr>
+          <tr><td>status</td><td>VARCHAR(20)</td><td>CHECK IN ('pending','accepted','in_progress','ready','completed','cancelled')</td></tr>
+        </table>
+
+        <h2 id="indexes">Indexes</h2>
+        <pre>CREATE UNIQUE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_vendors_user_id ON vendors(user_id);
+CREATE INDEX idx_vendors_status ON vendors(status);
+CREATE INDEX idx_products_vendor_id ON products(vendor_id);
+CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX idx_orders_vendor_id ON orders(vendor_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);</pre>
+
+        <h2 id="decisions">Design Decisions Worth Defending</h2>
+        <div class="decision"><b>ON DELETE RESTRICT on orders.customer_id / vendor_id</b>Preserves financial/audit history — users and vendors are suspended, never hard-deleted.</div>
+        <div class="decision"><b>order_items snapshots product_name and price</b>Historical orders stay accurate even if a vendor later renames or re-prices a product.</div>
+        <div class="decision"><b>vendors.rating defaults to NULL, not 0 or 5</b>A vendor with zero reviews displays as "New," not misleadingly pre-rated.</div>
+        <div class="decision"><b>Unique constraint on (order_id, customer_id) in reviews</b>Enforced at the database level — duplicate reviews impossible even under concurrent requests.</div>
+        <div class="decision"><b>Indexes on every foreign key and filtered column</b>Keeps lookups fast at this project's scale without needing a caching layer.</div>
+      </section>
+
+      <div class="final-callout">MarketLink · Digital Economy & Commerce Innovation Project 2026</div>
+
+    </main>
   </div>
-
-  <div class="badge-row">
-    <span class="tech-badge">React</span>
-    <span class="tech-badge">Tailwind CSS</span>
-    <span class="tech-badge">Node.js</span>
-    <span class="tech-badge">Express</span>
-    <span class="tech-badge">PostgreSQL</span>
-    <span class="tech-badge">Supabase</span>
-    <span class="tech-badge">JWT</span>
-    <span class="tech-badge">Nodemailer</span>
-    <span class="tech-badge">Paystack</span>
-  </div>
-
-  <div class="doc-grid">
-    <a href="problem-statement.html" class="doc-card">
-      <div class="doc-num">01</div>
-      <h2>Problem Statement</h2>
-      <p>The problem, target users, proposed solution, and what makes MarketLink different.</p>
-      <span class="arrow">Read →</span>
-    </a>
-    <a href="documentation.html" class="doc-card">
-      <div class="doc-num">02</div>
-      <h2>Project Documentation</h2>
-      <p>Tech stack, local setup, project structure, and full API reference.</p>
-      <span class="arrow">Read →</span>
-    </a>
-    <a href="architecture.html" class="doc-card">
-      <div class="doc-num">03</div>
-      <h2>System Architecture</h2>
-      <p>Frontend/backend/database layers, auth flow, order state machine, checkout transaction flow.</p>
-      <span class="arrow">Read →</span>
-    </a>
-    <a href="database-schema.html" class="doc-card">
-      <div class="doc-num">04</div>
-      <h2>Database Schema</h2>
-      <p>Entity relationships, table definitions, indexes, and key design decisions.</p>
-      <span class="arrow">Read →</span>
-    </a>
-  </div>
-
-  <div class="setup-section">
-    <h2>Quick start</h2>
-    <p>Full instructions are in Project Documentation — this is the fast path.</p>
-    <pre>cd backend && npm install && npm run migrate && npm run seed && npm run dev
-cd frontend && npm install && npm run dev</pre>
-    <p>Frontend: <code style="color:var(--lime);">localhost:5173</code> · Backend API: <code style="color:var(--lime);">localhost:5000/api</code></p>
-  </div>
-
-  <footer>MarketLink · Digital Economy & Commerce Innovation Project 2026</footer>
 </body>
 </html>
