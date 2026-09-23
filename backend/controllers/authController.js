@@ -378,7 +378,65 @@ const updateProfile = asyncHandler(async (req, res) => {
       ...rows[0],
       avatar_url: avatar_url || rows[0]?.avatar_url || null
     }
-  });
+// @desc    Direct password reset without SMTP requirement (Supabase & Postgres sync)
+// @route   POST /api/auth/reset-password-direct
+// @access  Public
+const resetPasswordDirect = asyncHandler(async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword || newPassword.length < 6) {
+    return res.status(400).json({ success: false, message: 'Valid email and password (min 6 chars) are required.' });
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(newPassword, salt);
+
+  const { supabase } = require('../config/supabase');
+  let userUpdated = false;
+
+  // 1. Update in Supabase users table & Supabase Auth if connected
+  if (supabase) {
+    try {
+      const { data: supaUser, error: supaErr } = await supabase
+        .from('users')
+        .update({ password_hash: passwordHash })
+        .eq('email', normalizedEmail)
+        .select('id, email, name')
+        .single();
+
+      if (!supaErr && supaUser) {
+        userUpdated = true;
+        // Also sync to Supabase Auth admin
+        try {
+          const { data: authUsers } = await supabase.auth.admin.listUsers();
+          const authAcc = authUsers?.users?.find(u => u.email?.toLowerCase() === normalizedEmail);
+          if (authAcc) {
+            await supabase.auth.admin.updateUserById(authAcc.id, { password: newPassword });
+          }
+        } catch (authErr) {
+          console.warn('[Supabase Auth password sync]', authErr.message);
+        }
+      }
+    } catch (e) {
+      console.warn('[Supabase update error]', e.message);
+    }
+  }
+
+  // 2. Also update in local Postgres database
+  const pgRes = await db.query(
+    'UPDATE users SET password_hash = $1 WHERE LOWER(email) = $2 RETURNING id, email, name, role',
+    [passwordHash, normalizedEmail]
+  );
+
+  if (pgRes.rows.length > 0 || userUpdated) {
+    return res.json({
+      success: true,
+      message: 'Password updated successfully. You can now log in with your new password.'
+    });
+  }
+
+  return res.status(404).json({ success: false, message: 'No account registered with this email address.' });
 });
 
-module.exports = { registerUser, loginUser, getMe, getAllUsers, updateUserRole, updateProfile };
+module.exports = { registerUser, loginUser, getMe, getAllUsers, updateUserRole, updateProfile, resetPasswordDirect };

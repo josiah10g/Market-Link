@@ -49,7 +49,7 @@ router.get('/vendor/analytics', protect, requireRole('vendor'), getVendorAnalyti
 router.put(
   '/:id/status',
   protect,
-  requireRole('vendor'),
+  requireRole(['vendor', 'admin']),
   [
     body('status').isIn(['accepted', 'in_progress', 'ready', 'completed', 'cancelled']).withMessage('Invalid order status'),
     validate

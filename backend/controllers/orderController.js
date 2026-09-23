@@ -343,12 +343,24 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     });
   }
 
-  // Find vendor for current user
-  const vendorRes = await db.query('SELECT id, business_name FROM vendors WHERE user_id = $1', [req.user.id]);
-  if (vendorRes.rows.length === 0) {
-    return res.status(403).json({ success: false, message: 'Unauthorized: Not a registered vendor' });
+  // Find vendor for current user, or allow admin to manage any vendor order
+  let vendor = null;
+  if (req.user.role === 'admin') {
+    const orderCheck = await db.query('SELECT vendor_id FROM orders WHERE id = $1', [parseInt(id, 10)]);
+    if (orderCheck.rows.length > 0) {
+      const vRes = await db.query('SELECT id, business_name FROM vendors WHERE id = $1', [orderCheck.rows[0].vendor_id]);
+      if (vRes.rows.length > 0) vendor = vRes.rows[0];
+    }
+  } else {
+    const vendorRes = await db.query('SELECT id, business_name FROM vendors WHERE user_id = $1', [req.user.id]);
+    if (vendorRes.rows.length > 0) {
+      vendor = vendorRes.rows[0];
+    }
   }
-  const vendor = vendorRes.rows[0];
+
+  if (!vendor) {
+    return res.status(403).json({ success: false, message: 'Unauthorized: Not associated with this vendor storefront' });
+  }
 
   const client = await db.getClient();
   try {
@@ -369,9 +381,9 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     const order = orderRes.rows[0];
     const currentStatus = order.status;
 
-    // Check state machine validity
+    // Check state machine validity (allowing smooth transition from pending directly to in_progress or accepted)
     const allowedNext = VALID_TRANSITIONS[currentStatus] || [];
-    if (!allowedNext.includes(status)) {
+    if (!allowedNext.includes(status) && !(currentStatus === 'pending' && status === 'in_progress')) {
       await client.query('ROLLBACK');
       return res.status(400).json({
         success: false,

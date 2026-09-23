@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { registerUser, loginUser, getMe, getAllUsers, updateUserRole, updateProfile } = require('../controllers/authController');
+const { registerUser, loginUser, getMe, getAllUsers, updateUserRole, updateProfile, resetPasswordDirect } = require('../controllers/authController');
 const { protect, requireRole } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 
@@ -29,6 +29,16 @@ router.post(
     validate
   ],
   loginUser
+);
+
+router.post(
+  '/reset-password-direct',
+  [
+    body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email address'),
+    body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    validate
+  ],
+  resetPasswordDirect
 );
 
 router.get('/me', protect, getMe);
