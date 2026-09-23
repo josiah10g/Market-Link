@@ -5,7 +5,7 @@
 ---
 
 ## Project Documentation 
-[Project Documentation](./docs/documentation.html)
+[Project Documentation](https://josiah10g.github.io/Market-Link/)
 
 ## 1. Project Overview & Problem Statement
 

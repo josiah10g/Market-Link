@@ -368,6 +368,7 @@ export const VendorOrders = () => {
         {/* Order Detail Modal / Drawer */}
         {selectedOrder && (
           <div
+            className="modal-overlay"
             style={{
               position: 'fixed',
               inset: 0,
@@ -383,6 +384,7 @@ export const VendorOrders = () => {
             }}
           >
             <div
+              className="modal-sheet"
               style={{
                 backgroundColor: 'var(--surface)',
                 border: '1px solid var(--line)',

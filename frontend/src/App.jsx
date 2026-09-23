@@ -1,26 +1,28 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Pages
+// Public Core Pages (Eagerly loaded for instant initial render)
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Vendors from './pages/Vendors';
-import Products from './pages/Products';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Orders from './pages/Orders';
-import VendorDashboard from './pages/VendorDashboard';
-import VendorOrders from './pages/VendorOrders';
-import VendorProducts from './pages/VendorProducts';
-import VendorReviews from './pages/VendorReviews';
-import VendorSettings from './pages/VendorSettings';
-import AdminDashboard from './pages/AdminDashboard';
-import Profile from './pages/Profile';
+
+// Lazy Loaded Secondary & Dashboard Pages (Code-split into dynamic chunks)
+const Vendors = lazy(() => import('./pages/Vendors'));
+const Products = lazy(() => import('./pages/Products'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Orders = lazy(() => import('./pages/Orders'));
+const VendorDashboard = lazy(() => import('./pages/VendorDashboard'));
+const VendorOrders = lazy(() => import('./pages/VendorOrders'));
+const VendorProducts = lazy(() => import('./pages/VendorProducts'));
+const VendorReviews = lazy(() => import('./pages/VendorReviews'));
+const VendorSettings = lazy(() => import('./pages/VendorSettings'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
@@ -80,43 +82,60 @@ function AppContent() {
 
   return (
     <div key={location.pathname} className="page-enter" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/vendors" element={<Vendors />} />
-        <Route path="/products" element={<Products />} />
+      <Suspense
+        fallback={
+          <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                border: '2.5px solid rgba(185, 255, 102, 0.15)',
+                borderTopColor: 'var(--lime)',
+                borderRadius: '50%',
+                animation: 'marketLinkSpin 0.75s linear infinite'
+              }}
+            />
+          </div>
+        }
+      >
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/vendors" element={<Vendors />} />
+          <Route path="/products" element={<Products />} />
 
-        {/* Customer Protected Routes (Cart, Checkout) */}
-        <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-        </Route>
+          {/* Customer Protected Routes (Cart, Checkout) */}
+          <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+          </Route>
 
-        {/* Authenticated Protected Routes (All roles can manage profile & view orders) */}
-        <Route element={<ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']} />}>
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/profile" element={<Profile />} />
-        </Route>
+          {/* Authenticated Protected Routes (All roles can manage profile & view orders) */}
+          <Route element={<ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']} />}>
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
 
-        {/* Vendor Protected Routes */}
-        <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
-          <Route path="/vendor" element={<VendorDashboard />} />
-          <Route path="/vendor/orders" element={<VendorOrders />} />
-          <Route path="/vendor/products" element={<VendorProducts />} />
-          <Route path="/vendor/reviews" element={<VendorReviews />} />
-          <Route path="/vendor/settings" element={<VendorSettings />} />
-        </Route>
+          {/* Vendor Protected Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
+            <Route path="/vendor" element={<VendorDashboard />} />
+            <Route path="/vendor/orders" element={<VendorOrders />} />
+            <Route path="/vendor/products" element={<VendorProducts />} />
+            <Route path="/vendor/reviews" element={<VendorReviews />} />
+            <Route path="/vendor/settings" element={<VendorSettings />} />
+          </Route>
 
-        {/* Admin Protected Routes */}
-        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Route>
+          {/* Admin Protected Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }

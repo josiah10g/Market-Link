@@ -457,8 +457,8 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Sub-tabs & Search */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem' }}>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="admin-filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem' }}>
+                  <div className="admin-subtabs-scroll" style={{ display: 'flex', gap: '1rem' }}>
                     <button style={subTabStyle(vendorFilter === 'all')} onClick={() => setVendorFilter('all')}>
                       All ({vendors.length})
                     </button>
@@ -610,8 +610,8 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Sub-tabs & Search */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem' }}>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="admin-filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem' }}>
+                  <div className="admin-subtabs-scroll" style={{ display: 'flex', gap: '1rem' }}>
                     <button style={subTabStyle(userFilter === 'all')} onClick={() => setUserFilter('all')}>
                       All ({usersList.length || 2830})
                     </button>
@@ -734,8 +734,8 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Sub-tabs & Search */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem' }}>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="admin-filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem' }}>
+                  <div className="admin-subtabs-scroll" style={{ display: 'flex', gap: '1rem' }}>
                     <button style={subTabStyle(orderFilter === 'all')} onClick={() => setOrderFilter('all')}>
                       All ({orders.length || 9412})
                     </button>
@@ -849,8 +849,8 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Sub-tabs & Search */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', maxWidth: '100%' }}>
+                <div className="admin-filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div className="admin-subtabs-scroll" style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', maxWidth: '100%' }}>
                     <button style={subTabStyle(reviewFilter === 'all')} onClick={() => setReviewFilter('all')}>
                       All ({reviewTotalCount})
                     </button>
@@ -1249,6 +1249,7 @@ export const AdminDashboard = () => {
                ============================================================== */}
             {modalItem && (
               <div
+                className="modal-overlay"
                 style={{
                   position: 'fixed',
                   inset: 0,
@@ -1263,7 +1264,7 @@ export const AdminDashboard = () => {
                 onClick={() => setModalItem(null)}
               >
                 <div
-                  className="card"
+                  className="card modal-sheet"
                   style={{
                     maxWidth: '520px',
                     width: '100%',

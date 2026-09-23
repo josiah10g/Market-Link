@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Settings, LogOut, CheckSquare, Users, Star, User } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Settings, LogOut, CheckSquare, Users, Star, User, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, onTabChange }) => {
@@ -9,6 +9,7 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
   const location = useLocation();
   const [currentHash, setCurrentHash] = useState(window.location.hash || '');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
   ];
 
   const renderNavLink = (link) => {
-    let isLinkActive = false;
+    let isLinkActive;
 
     if (role === 'admin') {
       // In admin dashboard, use activeTab if passed, or strictly match current hash
@@ -90,6 +91,7 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
         key={link.label}
         to={link.path}
         onClick={(e) => {
+          setMobileMenuOpen(false);
           if (role === 'admin' && onTabChange) {
             e.preventDefault();
             onTabChange(link.id);
@@ -165,9 +167,9 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
         flexShrink: 0
       }}
     >
-      {/* Brand logo in sidebar with Admin Dropdown */}
-      <div style={{ marginBottom: '2.5rem', position: 'relative' }} ref={dropdownRef}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Brand logo in sidebar with Account Dropdown & Mobile Hamburger */}
+      <div className="sidebar-top-bar" style={{ marginBottom: '2.5rem', position: 'relative' }} ref={dropdownRef}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
             <img src="/favicon.svg" alt="MarketLink" style={{ width: '26px', height: '26px', borderRadius: '5px' }} />
             <span style={{ fontSize: '1.15rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
@@ -175,52 +177,76 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
             </span>
           </Link>
 
-          {!isVendor && user && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {user && (
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                title={`${isVendor ? 'Vendor' : 'Admin'} account menu`}
+                aria-label={`${isVendor ? 'Vendor' : 'Admin'} account menu`}
+                style={{
+                  background: 'var(--surface-2)',
+                  border: '1px solid var(--line)',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: 'var(--lime)',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  position: 'relative',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--lime)'}
+                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--line)'}
+              >
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  user.name ? user.name.charAt(0).toUpperCase() : (isVendor ? 'V' : 'A')
+                )}
+              </button>
+            )}
+
+            {/* Mobile Hamburger Menu Toggle Button */}
             <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              title="Admin account menu"
+              type="button"
+              className="sidebar-mobile-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              title={mobileMenuOpen ? "Close menu" : "Open menu"}
               style={{
-                background: 'var(--surface-2)',
-                border: '1px solid var(--line)',
-                borderRadius: '50%',
-                width: '30px',
-                height: '30px',
-                display: 'flex',
+                background: mobileMenuOpen ? 'var(--lime-soft)' : 'var(--surface-2)',
+                border: `1px solid ${mobileMenuOpen ? 'var(--lime)' : 'var(--line)'}`,
+                borderRadius: 'var(--radius)',
+                color: mobileMenuOpen ? 'var(--lime)' : 'var(--ink)',
+                width: '34px',
+                height: '34px',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                color: 'var(--lime)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                position: 'relative',
                 transition: 'all 0.15s ease'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--lime)'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--line)'}
             >
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-              ) : (
-                user.name ? user.name.charAt(0).toUpperCase() : 'A'
-              )}
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-          )}
+          </div>
         </div>
 
-        {!isVendor && (
-          <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '2rem' }}>
-            Admin console
-          </div>
-        )}
+        <div className="sidebar-subheading" style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '2rem' }}>
+          {isVendor ? (businessName || user?.vendor?.business_name || 'Vendor console') : 'Admin console'}
+        </div>
 
         {/* Dropdown Menu matching Customer Dashboard */}
-        {!isVendor && dropdownOpen && (
+        {dropdownOpen && (
           <div
             style={{
               position: 'absolute',
               top: 'calc(100% + 4px)',
               right: 0,
-              width: '200px',
+              width: '210px',
               backgroundColor: 'var(--surface-2)',
               border: '1px solid var(--line-light)',
               borderRadius: 'var(--radius)',
@@ -231,46 +257,69 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
           >
             <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--line)' }}>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.name || 'Administrator'}
+                {user?.name || (isVendor ? 'Vendor' : 'Administrator')}
               </div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--muted)', marginTop: '0.1rem' }}>
-                {user?.email || 'admin@marketlink.ng'}
+                {user?.email || 'user@marketlink.ng'}
               </div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--lime)', fontWeight: 600, marginTop: '0.25rem' }}>
-                Super Admin
+                {isVendor ? 'Verified Merchant' : 'Super Admin'}
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                setDropdownOpen(false);
-                if (onTabChange) {
-                  onTabChange('settings');
-                  window.location.hash = '#settings';
-                } else {
-                  navigate('/admin#settings');
-                }
-              }}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.6rem 0.75rem',
-                fontSize: '0.8125rem',
-                color: 'var(--ink)',
-                background: 'none',
-                border: 'none',
-                borderBottom: '1px solid var(--line)',
-                cursor: 'pointer',
-                textAlign: 'left'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              <User size={14} color="var(--lime)" />
-              <span>Edit Details / Settings</span>
-            </button>
+            {isVendor ? (
+              <Link
+                to="/vendor/settings"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem 0.75rem',
+                  fontSize: '0.8125rem',
+                  color: 'var(--ink)',
+                  borderBottom: '1px solid var(--line)',
+                  textDecoration: 'none'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <Settings size={14} color="var(--lime)" />
+                <span>Store Settings</span>
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  setDropdownOpen(false);
+                  if (onTabChange) {
+                    onTabChange('settings');
+                    window.location.hash = '#settings';
+                  } else {
+                    navigate('/admin#settings');
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem 0.75rem',
+                  fontSize: '0.8125rem',
+                  color: 'var(--ink)',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: '1px solid var(--line)',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <User size={14} color="var(--lime)" />
+                <span>Edit Details / Settings</span>
+              </button>
+            )}
 
             <Link
               to="/profile"
@@ -320,95 +369,100 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
         )}
       </div>
 
-      {/* Navigation links */}
-      <nav style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-        {isVendor ? (
-          <>
-            {/* MANAGE section */}
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
-              MANAGE
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '1.75rem' }}>
-              {vendorManageLinks.map(renderNavLink)}
-            </div>
+      {/* Navigation links & bottom bar inside collapsible container for mobile */}
+      <div className={`sidebar-collapsible-menu ${mobileMenuOpen ? 'open' : ''}`}>
+        <nav style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+          {isVendor ? (
+            <>
+              {/* MANAGE section */}
+              <div className="sidebar-section-title" style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
+                MANAGE
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '1.75rem' }}>
+                {vendorManageLinks.map(renderNavLink)}
+              </div>
 
-            {/* STORE section */}
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
-              STORE
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-              {vendorStoreLinks.map(renderNavLink)}
-            </div>
-          </>
-        ) : (
-          <>
-            {/* PLATFORM section */}
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
-              PLATFORM
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '1.75rem' }}>
-              {adminPlatformLinks.map(renderNavLink)}
-            </div>
+              {/* STORE section */}
+              <div className="sidebar-section-title" style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
+                STORE
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                {vendorStoreLinks.map(renderNavLink)}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* PLATFORM section */}
+              <div className="sidebar-section-title" style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
+                PLATFORM
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '1.75rem' }}>
+                {adminPlatformLinks.map(renderNavLink)}
+              </div>
 
-            {/* SYSTEM section */}
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
-              SYSTEM
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-              {adminSystemLinks.map(renderNavLink)}
-            </div>
-          </>
-        )}
-      </nav>
+              {/* SYSTEM section */}
+              <div className="sidebar-section-title" style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem', paddingLeft: '0.5rem' }}>
+                SYSTEM
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                {adminSystemLinks.map(renderNavLink)}
+              </div>
+            </>
+          )}
+        </nav>
 
-      {/* Bottom Profile & Sign Out Bar */}
-      <div style={{ paddingTop: '1.25rem', borderTop: '1px solid var(--line)', marginTop: 'auto' }}>
-        {isVendor ? (
-          <div style={{ marginBottom: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.15rem' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--lime)', display: 'inline-block' }} />
-              <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {businessName || user?.vendor?.business_name || "Amaka's Kitchen"}
-              </span>
+        {/* Bottom Profile & Sign Out Bar */}
+        <div className="sidebar-bottom-bar" style={{ paddingTop: '1.25rem', borderTop: '1px solid var(--line)', marginTop: 'auto' }}>
+          {isVendor ? (
+            <div style={{ marginBottom: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.15rem' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--lime)', display: 'inline-block' }} />
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {businessName || user?.vendor?.business_name || "Amaka's Kitchen"}
+                </span>
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--muted)', paddingLeft: '0.85rem' }}>
+                Approved · Live
+              </div>
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--muted)', paddingLeft: '0.85rem' }}>
-              Approved · Live
-            </div>
-          </div>
-        ) : null}
+          ) : null}
 
-        {/* Distinct Sign Out Button */}
-        <button
-          onClick={logout}
-          title="Sign out of your account"
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            gap: '0.55rem',
-            padding: '0.5rem 0.65rem',
-            borderRadius: 'var(--radius)',
-            border: '1px solid rgba(239, 68, 68, 0.25)',
-            backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            color: 'var(--status-cancelled)',
-            fontSize: '0.75rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-            e.currentTarget.style.borderColor = 'var(--status-cancelled)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)';
-            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.25)';
-          }}
-        >
-          <LogOut size={13} />
-          <span>Sign out</span>
-        </button>
+          {/* Distinct Sign Out Button */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              logout();
+            }}
+            title="Sign out of your account"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: '0.55rem',
+              padding: '0.5rem 0.65rem',
+              borderRadius: 'var(--radius)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              backgroundColor: 'rgba(239, 68, 68, 0.05)',
+              color: 'var(--status-cancelled)',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+              e.currentTarget.style.borderColor = 'var(--status-cancelled)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+            }}
+          >
+            <LogOut size={13} />
+            <span>Sign out</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

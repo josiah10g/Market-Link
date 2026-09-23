@@ -53,7 +53,11 @@ export class ErrorBoundary extends React.Component {
             </pre>
             <button
               onClick={() => {
-                localStorage.clear();
+                localStorage.removeItem('marketlink_token');
+                localStorage.removeItem('marketlink_user');
+                localStorage.removeItem('marketlink_cart');
+                localStorage.removeItem('marketlink_cart_vendor');
+                sessionStorage.clear();
                 window.location.reload();
               }}
               style={{

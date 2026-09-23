@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  timeout: 15000, // 15-second network timeout prevents infinite hanging requests
   headers: {
     'Content-Type': 'application/json',
   },
@@ -19,10 +20,21 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: Handle global 401s
+// Response interceptor: Handle global 401s and network timeouts
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      if (!error.response) {
+        error.response = {
+          data: {
+            success: false,
+            message: 'Server took too long to respond. Please check your internet connection or try again.'
+          }
+        };
+      }
+    }
+
     if (error.response && error.response.status === 401) {
       // Clear token and broadcast logout if session expired
       if (localStorage.getItem('marketlink_token')) {

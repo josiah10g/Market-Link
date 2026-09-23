@@ -692,6 +692,7 @@ export const VendorDashboard = () => {
       {/* Add Product Modal */}
       {isAddProductOpen && (
         <div
+          className="modal-overlay"
           style={{
             position: 'fixed',
             inset: 0,
@@ -708,6 +709,7 @@ export const VendorDashboard = () => {
           }}
         >
           <div
+            className="modal-sheet"
             style={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--line)',
@@ -979,6 +981,7 @@ export const VendorDashboard = () => {
       {/* Edit Product Modal */}
       {editingProduct && (
         <div
+          className="modal-overlay"
           style={{
             position: 'fixed',
             inset: 0,
@@ -995,6 +998,7 @@ export const VendorDashboard = () => {
           }}
         >
           <div
+            className="modal-sheet"
             style={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--line)',
