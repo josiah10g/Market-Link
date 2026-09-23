@@ -663,6 +663,20 @@ module.exports = {
       return { rows: [] };
     }
 
+    // 15C-2. SELECT order_items
+    if (lower.includes('from order_items')) {
+      const orderId = params[0];
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('*')
+        .eq('order_id', orderId);
+      if (error) {
+        console.warn('[DB Bridge] order_items query error:', error.message);
+        return { rows: [] };
+      }
+      return { rows: data || [] };
+    }
+
     // 15D. SELECT reviews for vendor
     if (lower.includes('from reviews')) {
       if (lower.includes('where r.order_id =') || lower.includes('where order_id =')) {

@@ -159,6 +159,14 @@ const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 
 if (process.env.NODE_ENV !== 'test') {
+  // Initialize email transporter on boot to verify SMTP connection immediately
+  try {
+    const { getTransporter } = require('./utils/emailService');
+    getTransporter();
+  } catch (emailInitErr) {
+    console.warn('[SERVER] Email service boot check notice:', emailInitErr.message);
+  }
+
   app.listen(PORT, HOST, () => {
     console.log(`[SERVER] MarketLink API running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT} (bound to ${HOST})`);
   });
