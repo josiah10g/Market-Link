@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MarketLink — Documentation Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F0E; --surface:#121816; --surface-2:#171F1C; --line:#232D29;
+    --lime:#B9FF66; --lime-dim:#8FD84A; --ink:#EDEFEC; --muted:#8B978F;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.65;}
+  h1,h2,.brand{font-family:'Fraunces',serif; font-optical-sizing:auto;}
+
+  nav{display:flex; align-items:center; justify-content:space-between; padding:22px 48px; border-bottom:1px solid var(--line);}
+  .brand{font-weight:700; font-size:1.2rem; letter-spacing:-0.02em; color:var(--ink);}
+  .brand span{color:var(--lime);}
+
+  .hero{padding:64px 48px 48px; max-width:760px;}
+  .eyebrow{font-size:0.85rem; color:var(--lime); margin-bottom:16px; padding-left:14px; border-left:2px solid var(--lime);}
+  h1{font-size:2.4rem; font-weight:600; margin-bottom:14px;}
+  .hero p{color:var(--muted); font-size:1rem;}
+
+  .badge-row{display:flex; gap:8px; flex-wrap:wrap; padding:0 48px 48px;}
+  .tech-badge{background:var(--surface); border:1px solid var(--line); color:var(--ink); font-size:0.78rem; padding:5px 12px; border-radius:20px;}
+
+  .doc-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:1px; background:var(--line); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .doc-card{background:var(--bg); padding:32px 40px; text-decoration:none; color:var(--ink); transition:background .15s;}
+  .doc-card:hover{background:var(--surface);}
+  .doc-num{font-size:0.76rem; color:var(--lime); font-weight:600; margin-bottom:10px;}
+  .doc-card h2{font-size:1.2rem; font-weight:600; margin-bottom:8px;}
+  .doc-card p{color:var(--muted); font-size:0.88rem;}
+  .doc-card .arrow{color:var(--lime); font-size:0.82rem; margin-top:14px; display:inline-block;}
+
+  .setup-section{padding:56px 48px; max-width:760px;}
+  .setup-section h2{font-size:1.3rem; font-weight:600; margin-bottom:18px;}
+  pre{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:16px 18px; margin:0 0 16px; overflow-x:auto; font-size:0.82rem; color:var(--ink); font-family:'JetBrains Mono', monospace;}
+  .setup-section p{color:var(--muted); font-size:0.9rem; margin-bottom:14px;}
+
+  footer{padding:32px 48px; border-top:1px solid var(--line); color:var(--muted); font-size:0.82rem; text-align:center;}
+</style>
+</head>
+<body>
+  <nav>
+    <div class="brand">Market<span>Link</span></div>
+  </nav>
+
+  <div class="hero">
+    <div class="eyebrow">Project documentation hub</div>
+    <h1>MarketLink</h1>
+    <p>A multi-vendor booking & order management platform for local service businesses — built for the Code Campus International Full Stack Innovation Project 2026, Digital Economy & Commerce Systems category.</p>
+  </div>
+
+  <div class="badge-row">
+    <span class="tech-badge">React</span>
+    <span class="tech-badge">Tailwind CSS</span>
+    <span class="tech-badge">Node.js</span>
+    <span class="tech-badge">Express</span>
+    <span class="tech-badge">PostgreSQL</span>
+    <span class="tech-badge">Supabase</span>
+    <span class="tech-badge">JWT</span>
+    <span class="tech-badge">Nodemailer</span>
+    <span class="tech-badge">Paystack</span>
+  </div>
+
+  <div class="doc-grid">
+    <a href="problem-statement.html" class="doc-card">
+      <div class="doc-num">01</div>
+      <h2>Problem Statement</h2>
+      <p>The problem, target users, proposed solution, and what makes MarketLink different.</p>
+      <span class="arrow">Read →</span>
+    </a>
+    <a href="documentation.html" class="doc-card">
+      <div class="doc-num">02</div>
+      <h2>Project Documentation</h2>
+      <p>Tech stack, local setup, project structure, and full API reference.</p>
+      <span class="arrow">Read →</span>
+    </a>
+    <a href="architecture.html" class="doc-card">
+      <div class="doc-num">03</div>
+      <h2>System Architecture</h2>
+      <p>Frontend/backend/database layers, auth flow, order state machine, checkout transaction flow.</p>
+      <span class="arrow">Read →</span>
+    </a>
+    <a href="database-schema.html" class="doc-card">
+      <div class="doc-num">04</div>
+      <h2>Database Schema</h2>
+      <p>Entity relationships, table definitions, indexes, and key design decisions.</p>
+      <span class="arrow">Read →</span>
+    </a>
+  </div>
+
+  <div class="setup-section">
+    <h2>Quick start</h2>
+    <p>Full instructions are in Project Documentation — this is the fast path.</p>
+    <pre>cd backend && npm install && npm run migrate && npm run seed && npm run dev
+cd frontend && npm install && npm run dev</pre>
+    <p>Frontend: <code style="color:var(--lime);">localhost:5173</code> · Backend API: <code style="color:var(--lime);">localhost:5000/api</code></p>
+  </div>
+
+  <footer>MarketLink · Digital Economy & Commerce Innovation Project 2026</footer>
+</body>
+</html>

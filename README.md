@@ -1,8 +1,11 @@
 # MarketLink — Full Stack Multi-Vendor Commerce Platform
 **Digital Economy, Commerce & Business Systems Innovation Project 2026**
-*Code Campus International Evaluation Submission*
+*Code Campus Final NodeJS Project*
 
 ---
+
+## Project Documentation 
+[docs/MarketLink-Documentation .html]
 
 ## 1. Project Overview & Problem Statement
 
@@ -25,7 +28,7 @@ MarketLink formalizes informal local commerce without forcing vendors to adopt c
 
 ## 2. Tech Stack
 
-- **Frontend**: React 19, React Router v7, Context API (Auth + Cart), Axios with JWT interceptors, Lucide icons, Custom Vanilla CSS Design System with dark mode tokens (`#0B0F0E`, `#121816`, `#B9FF66`).
+- **Frontend**: React 19, React Router v7, Axios with JWT interceptors, Lucide icons, Custom Vanilla CSS Design System with dark mode tokens (`#0B0F0E`, `#121816`, `#B9FF66`).
 - **Typography**: Fraunces (editorial serif headings) + Inter (sans-serif body/UI).
 - **Backend**: Node.js, Express, PostgreSQL / Supabase, `pg` (Connection Pooling & SSL), `jsonwebtoken`, `bcryptjs`, `express-validator`, `morgan`.
 - **Architecture**: RESTful API with Role-Based Access Control (RBAC), Row-Level Transaction Locks (`SELECT ... FOR UPDATE`), and database-enforced unique constraints.
@@ -43,97 +46,34 @@ The platform is designed with a strict relational schema:
 - **`reviews`**: Verified customer ratings (1–5) and comments, strictly restricted to completed orders with a database-level unique constraint (`CONSTRAINT unique_order_customer_review UNIQUE(order_id, customer_id)`).
 - **`notifications`**: In-app alert queue with polling support, dispatching real-time notifications on order status transitions.
 
-### Key Indexes Created
-- `CREATE UNIQUE INDEX idx_users_email ON users(email);`
-- `CREATE INDEX idx_vendors_user_id ON vendors(user_id);`
-- `CREATE INDEX idx_products_vendor_id ON products(vendor_id);`
-- `CREATE INDEX idx_orders_customer_id ON orders(customer_id);`
-- `CREATE INDEX idx_orders_vendor_id ON orders(vendor_id);`
-- `CREATE INDEX idx_orders_status ON orders(status);`
+
+---
+## 4. Problem & Why It Matters
+Small vendors (tailors, salons, food sellers) rely on WhatsApp/phone calls for orders, leading to missed orders, no inventory tracking, and no order history. This causes lost revenue and poor customer experience.
+
+## 5. Target Users & Roles
+
+**Customer** — browses vendors, places orders/bookings, tracks order status, pays
+**Vendor** — manages storefront, products/services, inventory, incoming orders
+**Admin** — approves vendors, monitors platform activity, resolves disputes
+
+## 6. Core user journey
+Customer registers → browses vendor storefronts → adds to cart/books slot → checks out → vendor receives order → vendor updates status (accepted/preparing/ready/completed) → customer gets notified → order archived in history.
+
+## 7. Major features / workflows
+Vendor onboarding & approval, product/service catalog with inventory, cart & checkout, order status pipeline, vendor dashboard with analytics, review/rating system.
+
+## 8. Main entities
+User, Vendor, Product/Service, Order, OrderItem, Category, Review, Payment, Notification.
+
+## 9. What makes it different
+Inventory-aware ordering (not just a listing site) + role-based dashboards + real order lifecycle instead of a single "contact seller" button.
+
+## 10. Future growth
+delivery-rider role, subscription plans for vendors, AI-based product recommendations, multi-currency support.
+
+
 
 ---
 
-## 4. Local Setup & Running Instructions
 
-### Prerequisites
-- Node.js (v18+) and npm
-- PostgreSQL database (Local or Cloud Supabase instance)
-
-### Backend Setup
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Configure your environment variables:
-   - Copy `.env.example` to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - In `.env`, add your Supabase / PostgreSQL connection string:
-     ```env
-     PORT=5000
-     DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres
-     JWT_SECRET=marketlink_super_secret_jwt_key_2026_dev_secure
-     CLIENT_URL=http://localhost:5173
-     ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Run table migrations and seed demo data:
-   ```bash
-   npm run migrate
-   npm run seed
-   ```
-5. Start the backend development server:
-   ```bash
-   npm run dev
-   ```
-   *The API will start at `http://localhost:5000`.*
-
-### Frontend Setup
-1. Open a second terminal and navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   *The client will start at `http://localhost:5173`.*
-
----
-
-## 5. Demo Evaluation Credentials (For Evaluator & Marker Use Only)
-
-The seed script (`npm run seed`) populates realistic demo accounts and pre-existing Abuja commerce data:
-
-| Role | Email | Password | Details |
-|---|---|---|---|
-| **Admin** | `admin@marketlink.com` | `admin123` | Platform console, approve/reject vendors |
-| **Vendor** | `amaka@marketlink.com` | `password123` | Amaka's Kitchen (Food & Catering, incoming orders) |
-| **Vendor** | `tunde@marketlink.com` | `password123` | Tunde Bespoke Tailors (Fashion & Suits) |
-| **Customer** | `josiah@marketlink.com` | `password123` | "Hey Josiah" active order tracker & reviews |
-
----
-
-## 6. Key Technical Innovations Defended
-
-1. **Race-Condition Free Checkout (`SELECT ... FOR UPDATE`)**:
-   During order placement, a Postgres transaction acquires an exclusive row-level lock on each item's stock counter. If another customer attempts to checkout the last available item concurrently, one succeeds while the second fails cleanly without creating partial ghost orders.
-2. **Order Code Collision Retry Loop (Error 23505)**:
-   The backend generates human-readable order codes (`#ML-XXXX`). If a collision occurs against the unique constraint, the controller automatically catches Postgres error code `23505` and regenerates a fresh code without interrupting checkout.
-3. **Enforced State Machine Transitions**:
-   Invalid status hops (e.g. attempting to jump from `pending` directly to `completed`) are blocked server-side with `400 Bad Request`. Allowed paths:
-   - `pending` → `accepted` | `cancelled`
-   - `accepted` → `preparing` | `cancelled`
-   - `preparing` → `ready` | `cancelled`
-   - `ready` → `completed`
-4. **Transparent Controller-Side Rating Recompute**:
-   Upon review submission, vendor ratings and counts are recomputed atomically in the controller (`ROUND(AVG(rating), 1)`), immediately reflecting in the UI.
-5. **Non-Destructive Compliance Audit Trail**:
-   Vendors and users are suspended rather than hard-deleted, preserving order history, invoice numbers, and relational integrity (`ON DELETE RESTRICT`).
