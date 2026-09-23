@@ -54,50 +54,70 @@ export const VendorReviews = () => {
           </p>
         </div>
 
-        {/* Rating Breakdown Card matching Screenshot 4 */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '180px 1fr',
-            gap: '2.5rem',
-            alignItems: 'center',
-            padding: '2rem 2.5rem',
-            backgroundColor: 'var(--surface)',
-            border: '1px solid var(--line)',
-            borderRadius: 'var(--radius)',
-            marginBottom: '2.5rem',
-            maxWidth: '680px'
-          }}
-        >
-          {/* Left: Big Number & Review count */}
-          <div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '3.2rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1 }}>
-              {summary.rating ? Number(summary.rating).toFixed(1) : '4.8'}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
-              Average rating · {summary.rating_count || 96} reviews
-            </div>
-          </div>
-
-          {/* Right: Star Bar Breakdown (5 down to 1) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            {[
-              { stars: 5, pct: '78%', count: 75 },
-              { stars: 4, pct: '14%', count: 13 },
-              { stars: 3, pct: '6%', count: 6 },
-              { stars: 2, pct: '1%', count: 1 },
-              { stars: 1, pct: '1%', count: 1 },
-            ].map((row) => (
-              <div key={row.stars} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
-                <span style={{ width: '12px' }}>{row.stars}</span>
-                <div style={{ flexGrow: 1, height: '4px', backgroundColor: 'var(--surface-2)', borderRadius: '2px', overflow: 'hidden' }}>
-                  <div style={{ width: row.pct, height: '100%', backgroundColor: row.stars >= 4 ? 'var(--lime)' : 'var(--muted)' }} />
-                </div>
-                <span style={{ width: '20px', textAlign: 'right', color: 'var(--muted)' }}>{row.count}</span>
+        {/* Rating Breakdown Card - only display calculated rating if reviews exist */}
+        {summary.rating_count > 0 ? (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '180px 1fr',
+              gap: '2.5rem',
+              alignItems: 'center',
+              padding: '2rem 2.5rem',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--line)',
+              borderRadius: 'var(--radius)',
+              marginBottom: '2.5rem',
+              maxWidth: '680px'
+            }}
+          >
+            {/* Left: Big Number & Review count */}
+            <div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '3.2rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1 }}>
+                {Number(summary.rating).toFixed(1)}
               </div>
-            ))}
+              <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
+                Average rating · {summary.rating_count} {summary.rating_count === 1 ? 'review' : 'reviews'}
+              </div>
+            </div>
+
+            {/* Right: Star Bar Breakdown */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {[5, 4, 3, 2, 1].map((stars) => {
+                const count = reviews.filter((r) => Math.round(Number(r.rating)) === stars).length;
+                const pct = summary.rating_count > 0 ? `${Math.round((count / summary.rating_count) * 100)}%` : '0%';
+                return (
+                  <div key={stars} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                    <span style={{ width: '12px' }}>{stars}</span>
+                    <div style={{ flexGrow: 1, height: '4px', backgroundColor: 'var(--surface-2)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: pct, height: '100%', backgroundColor: stars >= 4 ? 'var(--lime)' : 'var(--muted)' }} />
+                    </div>
+                    <span style={{ width: '20px', textAlign: 'right', color: 'var(--muted)' }}>{count}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className="card"
+            style={{
+              padding: '1.25rem 1.75rem',
+              marginBottom: '2rem',
+              maxWidth: '420px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              backgroundColor: 'var(--surface)'
+            }}
+          >
+            <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--muted)' }}>
+              No reviews
+            </div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--muted)', borderLeft: '1px solid var(--line)', paddingLeft: '1rem' }}>
+              0 customer ratings recorded yet.
+            </div>
+          </div>
+        )}
 
         {/* Reviews List */}
         {loading ? (
