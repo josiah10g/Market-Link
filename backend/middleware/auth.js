@@ -1,9 +1,7 @@
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
-/**
- * Protect routes: verifies JWT bearer token and attaches req.user
- */
+
 const protect = async (req, res, next) => {
   let token;
   if (
@@ -41,9 +39,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-/**
- * Require specific role(s) server-side (RBAC)
- */
+
 const requireRole = (...roles) => {
   const allowed = roles.flat();
   return (req, res, next) => {

@@ -4,7 +4,6 @@ require('dotenv').config();
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
-// Backend admin Supabase client (using Service Role to bypass RLS when needed)
 const supabase = (supabaseUrl && supabaseServiceRole)
   ? createClient(supabaseUrl, supabaseServiceRole, {
       auth: {

@@ -14,14 +14,14 @@ const validate = require('../middleware/validate');
 
 const router = express.Router();
 
-// Image upload route for vendor banners/logos
+
 router.post('/upload-image', protect, requireRole(['vendor', 'admin']), uploadImage);
 
-// Public routes
+
 router.get('/', getVendors);
 router.get('/:id', getVendorById);
 
-// Vendor protected routes
+
 router.get('/me/profile', protect, requireRole('vendor'), getMyVendorProfile);
 router.put(
   '/me/profile',
@@ -35,7 +35,7 @@ router.put(
   updateMyVendorProfile
 );
 
-// Admin protected routes
+
 router.get('/admin/all', protect, requireRole('admin'), getAdminVendors);
 router.put(
   '/:id/status',

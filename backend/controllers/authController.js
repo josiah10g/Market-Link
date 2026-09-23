@@ -146,7 +146,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(401).json({ success: false, message: 'Incorrect password. Please try again or click "Forgot password?".' });
   }
 
-  // If vendor, attach vendor storefront data
+
   let vendorProfile = null;
   if (user.role === 'vendor') {
     const vendorRes = await db.query('SELECT * FROM vendors WHERE user_id = $1', [user.id]);
@@ -174,9 +174,7 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get current user profile
-// @route   GET /api/auth/me
-// @access  Private
+
 const getMe = asyncHandler(async (req, res) => {
   const userRes = await db.query(
     'SELECT id, name, email, phone, city, address, role, avatar_url, is_active, created_at FROM users WHERE id = $1',

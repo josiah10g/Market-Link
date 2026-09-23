@@ -14,7 +14,7 @@ const validate = require('../middleware/validate');
 
 const router = express.Router();
 
-// Customer routes
+
 router.post(
   '/',
   protect,
@@ -43,7 +43,7 @@ router.post(
 
 router.get('/mine', protect, requireRole('customer'), getMyOrders);
 
-// Vendor routes
+
 router.get('/vendor', protect, requireRole('vendor'), getVendorOrders);
 router.get('/vendor/analytics', protect, requireRole('vendor'), getVendorAnalytics);
 router.put(
@@ -57,7 +57,6 @@ router.put(
   updateOrderStatus
 );
 
-// Admin routes
 router.get('/admin/all', protect, requireRole('admin'), getAdminOrders);
 
 module.exports = router;

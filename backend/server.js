@@ -6,10 +6,9 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 const path = require('path');
 dotenv.config();
-// Also attempt loading backend/.env if running from workspace root
+
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-// Process-level crash prevention guards for production cloud environments (Railway)
 process.on('uncaughtException', (err) => {
   console.error('[UNCAUGHT EXCEPTION]', err);
 });
@@ -36,7 +35,6 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
-// Root & Health check endpoints for Railway / cloud monitoring
 app.get('/', (req, res) => {
   res.json({
     status: 'online',
@@ -59,7 +57,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Quick Email Diagnostic Endpoint
+
 app.get('/api/test-email', async (req, res) => {
   const targetEmail = req.query.to || process.env.SMTP_USER;
   if (!targetEmail) {
@@ -107,7 +105,7 @@ app.get('/api/test-email', async (req, res) => {
   }
 });
 
-// Live Platform Public Stats endpoint (Real-time Supabase count)
+
 app.get('/api/platform/stats', async (req, res) => {
   try {
     const { supabase } = require('./config/supabase');
@@ -120,7 +118,7 @@ app.get('/api/platform/stats', async (req, res) => {
       supabase.from('orders').select('*', { count: 'exact', head: true })
     ]);
 
-    // Average rating
+  
     const { data: ratingData } = await supabase.from('vendors').select('rating').not('rating', 'is', null);
     let avgRating = null;
     if (ratingData && ratingData.length > 0) {
@@ -139,7 +137,7 @@ app.get('/api/platform/stats', async (req, res) => {
   }
 });
 
-// Mount Routes
+//Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/products', productRoutes);
@@ -147,19 +145,19 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-// 404 Handler
+
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Endpoint ${req.originalUrl} not found` });
 });
 
-// Centralized Error Handler
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 
 if (process.env.NODE_ENV !== 'test') {
-  // Initialize email transporter on boot to verify SMTP connection immediately
+
   try {
     const { getTransporter } = require('./utils/emailService');
     getTransporter();

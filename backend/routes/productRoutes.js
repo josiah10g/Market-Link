@@ -14,13 +14,11 @@ const validate = require('../middleware/validate');
 
 const router = express.Router();
 
-// Public routes
+
 router.get('/', getProducts);
 
-// Image upload route (Allowed for all authenticated users: customer, vendor, admin)
 router.post('/upload-image', protect, requireRole(['customer', 'vendor', 'admin']), uploadImage);
 
-// Vendor protected routes
 router.get('/vendor/mine', protect, requireRole('vendor'), getMyProducts);
 
 router.get('/:id', getProductById);

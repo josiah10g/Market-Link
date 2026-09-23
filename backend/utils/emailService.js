@@ -1,10 +1,6 @@
 const nodemailer = require('nodemailer');
 const db = require('../config/db');
 
-/**
- * Configure Nodemailer Transporter
- * Supports Gmail, Custom SMTP, Ethereal Test Account, or Mailtrap
- */
 let transporter = null;
 
 const getTransporter = () => {
@@ -13,7 +9,7 @@ const getTransporter = () => {
   const rawHost = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
   const port = Number(process.env.SMTP_PORT) || 465;
   const user = (process.env.SMTP_USER || '').trim();
-  // Strip out spaces in App Password just in case user pasted with spaces or trailing quotes
+
   const rawPass = (process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '').trim();
   const pass = rawPass.replace(/\s+/g, '');
 
@@ -24,7 +20,7 @@ const getTransporter = () => {
       auth: { user, pass }
     };
 
-    // If host is gmail, using service: 'gmail' automatically configures optimal ports and hosts
+   
     if (rawHost.includes('gmail')) {
       transportConfig.service = 'gmail';
     } else {
@@ -38,7 +34,7 @@ const getTransporter = () => {
 
     transporter = nodemailer.createTransport(transportConfig);
 
-    // Verify the connection on first creation
+
     transporter.verify((err, success) => {
       if (err) {
         console.error('[NODEMAILER] SMTP connection verification FAILED:', err.message);
@@ -64,9 +60,7 @@ const getTransporter = () => {
   return transporter;
 };
 
-/**
- * Modern dark-mode editorial HTML email wrapper matching MarketLink design
- */
+
 const renderEmailTemplate = ({ title, preheader, bodyHtml, ctaText, ctaUrl }) => {
   return `
     <!DOCTYPE html>
@@ -109,9 +103,7 @@ const renderEmailTemplate = ({ title, preheader, bodyHtml, ctaText, ctaUrl }) =>
   `;
 };
 
-/**
- * Dispatch an email safely using Nodemailer
- */
+
 const sendEmail = async ({ to, subject, html, text }) => {
   try {
     const transport = getTransporter();
@@ -133,9 +125,6 @@ const sendEmail = async ({ to, subject, html, text }) => {
   }
 };
 
-/**
- * Order Confirmation Email to Customer
- */
 const sendOrderConfirmationEmail = async ({ customerEmail, customerName, orderCode, vendorName, totalAmount, paymentMethod, deliveryAddress, items }) => {
   if (!customerEmail) return;
 
@@ -182,9 +171,6 @@ const sendOrderConfirmationEmail = async ({ customerEmail, customerName, orderCo
   });
 };
 
-/**
- * New Order Alert Email to Vendor
- */
 const sendVendorNewOrderEmail = async ({ vendorEmail, vendorBusinessName, customerName, orderCode, totalAmount, items }) => {
   if (!vendorEmail) return;
 
@@ -214,9 +200,7 @@ const sendVendorNewOrderEmail = async ({ vendorEmail, vendorBusinessName, custom
   });
 };
 
-/**
- * Order Status Update Email to Customer
- */
+
 const sendOrderStatusEmail = async ({ customerEmail, customerName, orderCode, vendorName, newStatus }) => {
   if (!customerEmail) return;
 
@@ -250,9 +234,7 @@ const sendOrderStatusEmail = async ({ customerEmail, customerName, orderCode, ve
   });
 };
 
-/**
- * Welcome Email for New Signups
- */
+
 const sendWelcomeEmail = async ({ email, name, role }) => {
   if (!email) return;
 
@@ -275,9 +257,7 @@ const sendWelcomeEmail = async ({ email, name, role }) => {
   });
 };
 
-/**
- * Creates in-app notification and dispatches real email
- */
+
 const createNotification = async (clientOrDb, { userId, orderId, type, title, message, userEmail, userName }) => {
   const executor = clientOrDb || db;
   try {
@@ -288,7 +268,7 @@ const createNotification = async (clientOrDb, { userId, orderId, type, title, me
       [userId, orderId || null, type, title, message]
     );
 
-    // If userEmail was passed or user exists, send email
+    
     let recipientEmail = userEmail;
     if (!recipientEmail && userId) {
       try {
@@ -297,7 +277,7 @@ const createNotification = async (clientOrDb, { userId, orderId, type, title, me
           recipientEmail = uRes.rows[0].email;
         }
       } catch (e) {
-        // Fallback
+        
       }
     }
 

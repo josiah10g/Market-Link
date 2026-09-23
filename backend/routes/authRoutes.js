@@ -44,7 +44,6 @@ router.post(
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 
-// Admin Email Diagnostics & Test Route
 router.post('/test-smtp', protect, requireRole('admin'), async (req, res) => {
   try {
     const { sendEmail } = require('../utils/emailService');
@@ -72,7 +71,7 @@ router.post('/test-smtp', protect, requireRole('admin'), async (req, res) => {
   }
 });
 
-// Admin User Management Routes (Appoint & Remove Admin)
+
 router.get('/users', protect, requireRole('admin'), getAllUsers);
 router.put('/users/:id/role', protect, requireRole('admin'), updateUserRole);
 

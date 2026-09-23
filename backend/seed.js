@@ -7,18 +7,18 @@ async function seed() {
   const client = await pool.connect();
 
   try {
-    // 1. Ensure tables exist
+    
     await client.query(createTablesSQL);
 
-    // 2. Clear existing demo data cleanly
+   
     await client.query('TRUNCATE TABLE reviews, order_items, orders, notifications, products, vendors, users RESTART IDENTITY CASCADE;');
 
-    // 3. Password hashes
+
     const salt = await bcrypt.genSalt(10);
     const demoPasswordHash = await bcrypt.hash('password123', salt);
     const adminPasswordHash = await bcrypt.hash('admin123', salt);
 
-    // 4. Create Users (Admin, Customer, Vendors)
+  
     const usersSQL = `
       INSERT INTO users (name, email, password_hash, phone, role) VALUES
       ('Admin User', 'admin@marketlink.com', $1, '08012340001', 'admin'),
@@ -45,7 +45,7 @@ async function seed() {
     const ngoziUser = users.find(u => u.email === 'ngozi@marketlink.com');
     const eleganceUser = users.find(u => u.email === 'elegance@marketlink.com');
 
-    // 5. Create Vendors (matching mockup screenshot stats and names)
+    
     const vendorsSQL = `
       INSERT INTO vendors (user_id, business_name, description, category, phone, address, city, status, rating, rating_count, total_orders) VALUES
       ($1, 'Amaka''s Kitchen', 'Authentic Nigerian party jollof, soups, fried rice and local delicacies made fresh daily in Abuja.', 'Food', '08023456789', 'Suite 14, Wuse II Plaza', 'Abuja', 'approved', 4.8, 96, 248),
@@ -114,7 +114,7 @@ async function seed() {
     const phoneScreen = products.find(p => p.name.includes('Phone Screen'));
     const smallChops = products.find(p => p.name.includes('Small Chops'));
 
-    // 7. Seed Orders matching screenshot orders (#ML-3312, #ML-3311, #ML-3309, #ML-3306, #ML-3302)
+   
     const ordersSQL = `
       INSERT INTO orders (order_code, customer_id, vendor_id, total_amount, status, payment_status, payment_method, delivery_address, notes, created_at) VALUES
       ('ML-3312', $1, $2, 9000.00, 'pending', 'pay_on_delivery', 'pay_on_delivery', 'Plot 204, Garki II, Abuja', 'Extra pepper sauce please', NOW() - INTERVAL '12 minutes'),
