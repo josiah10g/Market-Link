@@ -42,7 +42,7 @@ const verifyPaystackRef = async (reference, secretKey) => {
 
 // Valid state machine transitions
 const VALID_TRANSITIONS = {
-  pending: ['accepted', 'cancelled'],
+  pending: ['accepted', 'in_progress', 'cancelled'],
   accepted: ['in_progress', 'cancelled'],
   in_progress: ['ready', 'cancelled'],
   ready: ['completed'],
