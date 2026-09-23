@@ -217,7 +217,29 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.85rem' }}>
+          <div
+            onClick={() => {
+              if (onTabChange) {
+                onTabChange('settings');
+                window.location.hash = '#settings';
+              } else {
+                navigate('/admin#settings');
+              }
+            }}
+            title="Click to edit administrator details"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              marginBottom: '0.85rem',
+              cursor: 'pointer',
+              padding: '0.35rem 0.4rem',
+              borderRadius: 'var(--radius)',
+              transition: 'background-color 0.15s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-2)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
             <div
               style={{
                 width: '28px',
@@ -234,12 +256,12 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
             >
               {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
             </div>
-            <div>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2 }}>
+            <div style={{ flexGrow: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {user?.name || 'Admin User'}
               </div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--muted)', lineHeight: 1.2 }}>
-                Super admin
+                Super admin · Edit details
               </div>
             </div>
           </div>

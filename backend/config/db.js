@@ -688,8 +688,8 @@ module.exports = {
         if (error) throw error;
         return { rows: data || [] };
       }
-      // General reviews query
-      let q = supabase.from('reviews').select('*, users(name), orders(order_code)');
+      // General reviews query (for vendor or platform admin)
+      let q = supabase.from('reviews').select('*, users(name), vendors(business_name), orders(order_code)');
       if (params.length > 0 && lower.includes('vendor_id')) {
         q = q.eq('vendor_id', params[0]);
       }
@@ -697,10 +697,19 @@ module.exports = {
       if (error) throw error;
       const formatted = (data || []).map(r => ({
         ...r,
-        customer_name: r.users?.name,
+        customer_name: r.users?.name || 'Customer',
+        vendor_name: r.vendors?.business_name || 'Vendor',
         order_code: r.orders?.order_code
       }));
       return { rows: formatted };
+    }
+
+    // 15D-2. DELETE review
+    if (lower.startsWith('delete from reviews')) {
+      const id = params[0];
+      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      if (error) throw error;
+      return { rows: [] };
     }
 
     // 15E. UPDATE vendors total_orders counter

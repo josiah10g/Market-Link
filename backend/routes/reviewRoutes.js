@@ -1,6 +1,12 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { createReview, getVendorReviews, getMyVendorReviews } = require('../controllers/reviewController');
+const {
+  createReview,
+  getVendorReviews,
+  getMyVendorReviews,
+  getAllReviews,
+  deleteReview
+} = require('../controllers/reviewController');
 const { protect, requireRole } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 
@@ -21,5 +27,8 @@ router.post(
   ],
   createReview
 );
+
+router.get('/admin/all', protect, requireRole('admin'), getAllReviews);
+router.delete('/:id', protect, requireRole('admin'), deleteReview);
 
 module.exports = router;

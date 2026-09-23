@@ -118,4 +118,52 @@ const getMyVendorReviews = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { createReview, getVendorReviews, getMyVendorReviews };
+// @desc    Admin: get all reviews across vendors
+// @route   GET /api/reviews/admin/all
+// @access  Private (Admin only)
+const getAllReviews = asyncHandler(async (req, res) => {
+  const { rows } = await db.query(
+    `SELECT r.*, u.name as customer_name, v.business_name as vendor_name, o.order_code
+     FROM reviews r
+     JOIN users u ON r.customer_id = u.id
+     JOIN vendors v ON r.vendor_id = v.id
+     JOIN orders o ON r.order_id = o.id
+     ORDER BY r.created_at DESC`
+  );
+
+  res.json({ success: true, count: rows.length, data: rows });
+});
+
+// @desc    Admin: delete / remove a review
+// @route   DELETE /api/reviews/:id
+// @access  Private (Admin only)
+const deleteReview = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const reviewRes = await db.query('SELECT vendor_id FROM reviews WHERE id = $1', [id]);
+  if (reviewRes.rows.length === 0) {
+    return res.status(404).json({ success: false, message: 'Review not found' });
+  }
+  const vendorId = reviewRes.rows[0].vendor_id;
+
+  await db.query('DELETE FROM reviews WHERE id = $1', [id]);
+
+  // Recalculate vendor rating
+  await db.query(
+    `UPDATE vendors
+     SET rating = (SELECT ROUND(AVG(rating), 1) FROM reviews WHERE vendor_id = $1),
+         rating_count = (SELECT COUNT(*) FROM reviews WHERE vendor_id = $1)
+     WHERE id = $1`,
+    [vendorId]
+  );
+
+  res.json({ success: true, message: 'Review removed successfully' });
+});
+
+module.exports = {
+  createReview,
+  getVendorReviews,
+  getMyVendorReviews,
+  getAllReviews,
+  deleteReview
+};

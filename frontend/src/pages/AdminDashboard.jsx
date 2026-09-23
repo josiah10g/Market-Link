@@ -25,6 +25,27 @@ export const AdminDashboard = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [roleActionLoading, setRoleActionLoading] = useState(null);
 
+  const [reviewsList, setReviewsList] = useState([]);
+  const [reviewActionLoading, setReviewActionLoading] = useState(null);
+
+  // Admin Profile Edit State
+  const [adminName, setAdminName] = useState(user?.name || '');
+  const [adminPhone, setAdminPhone] = useState(user?.phone || '');
+  const [adminCity, setAdminCity] = useState(user?.city || 'Abuja');
+  const [adminAddress, setAdminAddress] = useState(user?.address || '');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  // Sync user state when user updates
+  useEffect(() => {
+    if (user) {
+      setAdminName(user.name || '');
+      setAdminPhone(user.phone || '');
+      setAdminCity(user.city || 'Abuja');
+      setAdminAddress(user.address || '');
+    }
+  }, [user]);
+
   // Sub-tabs & Search for each view
   const [vendorFilter, setVendorFilter] = useState('all');
   const [vendorSearch, setVendorSearch] = useState('');
@@ -58,10 +79,11 @@ export const AdminDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      const [vendorsRes, ordersRes, usersRes] = await Promise.all([
+      const [vendorsRes, ordersRes, usersRes, reviewsRes] = await Promise.all([
         api.get('/vendors/admin/all'),
         api.get('/orders/admin/all'),
-        api.get('/auth/users')
+        api.get('/auth/users'),
+        api.get('/reviews/admin/all').catch(() => ({ data: { success: true, data: [] } }))
       ]);
 
       if (vendorsRes.data.success) {
@@ -73,6 +95,9 @@ export const AdminDashboard = () => {
       }
       if (usersRes.data.success) {
         setUsersList(usersRes.data.data);
+      }
+      if (reviewsRes.data.success) {
+        setReviewsList(reviewsRes.data.data || []);
       }
     } catch (err) {
       console.error(err);
@@ -152,126 +177,43 @@ export const AdminDashboard = () => {
     return `${diffInMonths} months ago`;
   };
 
-  // Mock sample reviews if table has none yet to match design showcase
-  const displayReviews = [
-    {
-      id: 1,
-      customer: 'Grace N.',
-      vendor: "Amaka's Kitchen",
-      rating: 5,
-      comment: 'Food arrived hot and on time. Best jollof in Wuse 2!',
-      date: '2 days ago',
-      flagged: false
-    },
-    {
-      id: 2,
-      customer: 'Ruth M.',
-      vendor: "Amaka's Kitchen",
-      rating: 4,
-      comment: 'Good taste, arrived a bit late due to rain.',
-      date: '1 week ago',
-      flagged: false
-    },
-    {
-      id: 3,
-      customer: 'Kelechi O.',
-      vendor: "Chidi's Snack Hub",
-      rating: 1,
-      comment: 'Order was incomplete. Customer service did not answer.',
-      date: '3 weeks ago',
-      flagged: true
-    },
-    {
-      id: 4,
-      customer: 'Emeka D.',
-      vendor: 'Elegance Hair Studio',
-      rating: 5,
-      comment: 'Amazing haircut and pleasant styling setup!',
-      date: '1 month ago',
-      flagged: false
+  // Delete review handler
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm('Are you sure you want to remove this review from the platform?')) return;
+    try {
+      setReviewActionLoading(reviewId);
+      const { data } = await api.delete(`/reviews/${reviewId}`);
+      if (data.success) {
+        toast.success('Review removed successfully.');
+        setReviewsList(prev => prev.filter(r => r.id !== reviewId));
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete review');
+    } finally {
+      setReviewActionLoading(null);
     }
-  ];
+  };
 
-  // Filtering for Vendors
-  const pendingVendorsCount = vendors.filter(v => v.status === 'pending').length;
-  const approvedVendorsCount = vendors.filter(v => v.status === 'approved').length;
-  const suspendedVendorsCount = vendors.filter(v => v.status === 'suspended' || v.status === 'rejected').length;
+  // Review counts from actual database
+  const reviewTotalCount = reviewsList.length;
+  const review5Count = reviewsList.filter(r => Number(r.rating) === 5).length;
+  const review4Count = reviewsList.filter(r => Number(r.rating) === 4).length;
+  const review3AndBelowCount = reviewsList.filter(r => Number(r.rating) <= 3).length;
 
-  const filteredVendors = vendors.filter(v => {
-    let matchStatus = true;
-    if (vendorFilter === 'pending') matchStatus = v.status === 'pending';
-    else if (vendorFilter === 'approved') matchStatus = v.status === 'approved';
-    else if (vendorFilter === 'suspended') matchStatus = v.status === 'suspended' || v.status === 'rejected';
-
-    let matchSearch = true;
-    if (vendorSearch.trim()) {
-      const q = vendorSearch.toLowerCase();
-      matchSearch = (v.business_name && v.business_name.toLowerCase().includes(q)) ||
-                    (v.user_email && v.user_email.toLowerCase().includes(q)) ||
-                    (v.category && v.category.toLowerCase().includes(q));
-    }
-    return matchStatus && matchSearch;
-  });
-
-  // Filtering for Users
-  const customerCount = usersList.filter(u => u.role === 'customer').length;
-  const vendorUserCount = usersList.filter(u => u.role === 'vendor').length;
-  const adminCount = usersList.filter(u => u.role === 'admin').length;
-  const suspendedUserCount = usersList.filter(u => u.is_active === false).length;
-
-  const filteredUsers = usersList.filter(u => {
-    let matchRole = true;
-    if (userFilter === 'customers') matchRole = u.role === 'customer';
-    else if (userFilter === 'vendors') matchRole = u.role === 'vendor';
-    else if (userFilter === 'admins') matchRole = u.role === 'admin';
-    else if (userFilter === 'suspended') matchRole = u.is_active === false;
-
-    let matchSearch = true;
-    if (userSearch.trim()) {
-      const q = userSearch.toLowerCase();
-      matchSearch = (u.name && u.name.toLowerCase().includes(q)) ||
-                    (u.email && u.email.toLowerCase().includes(q));
-    }
-    return matchRole && matchSearch;
-  });
-
-  // Filtering for Orders
-  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
-  const inProgressOrdersCount = orders.filter(o => o.status === 'in_progress' || o.status === 'accepted' || o.status === 'ready').length;
-  const completedOrdersCount = orders.filter(o => o.status === 'completed').length;
-  const cancelledOrdersCount = orders.filter(o => o.status === 'cancelled').length;
-
-  const filteredOrders = orders.filter(o => {
-    let matchStatus = true;
-    if (orderFilter === 'pending') matchStatus = o.status === 'pending';
-    else if (orderFilter === 'in_progress') matchStatus = (o.status === 'in_progress' || o.status === 'accepted' || o.status === 'ready');
-    else if (orderFilter === 'completed') matchStatus = o.status === 'completed';
-    else if (orderFilter === 'cancelled') matchStatus = o.status === 'cancelled';
-
-    let matchSearch = true;
-    if (orderSearch.trim()) {
-      const q = orderSearch.toLowerCase();
-      matchSearch = (o.order_code && o.order_code.toLowerCase().includes(q)) ||
-                    (o.customer_name && o.customer_name.toLowerCase().includes(q)) ||
-                    (o.vendor_name && o.vendor_name.toLowerCase().includes(q));
-    }
-    return matchStatus && matchSearch;
-  });
-
-  // Filtering for Reviews
-  const filteredReviews = displayReviews.filter(r => {
+  // Filtering for Reviews (uses real reviews list from backend)
+  const filteredReviews = reviewsList.filter(r => {
     let matchTab = true;
-    if (reviewFilter === '5') matchTab = r.rating === 5;
-    else if (reviewFilter === '4') matchTab = r.rating === 4;
-    else if (reviewFilter === '3') matchTab = r.rating <= 3;
-    else if (reviewFilter === 'flagged') matchTab = r.flagged === true;
+    if (reviewFilter === '5') matchTab = Number(r.rating) === 5;
+    else if (reviewFilter === '4') matchTab = Number(r.rating) === 4;
+    else if (reviewFilter === '3') matchTab = Number(r.rating) <= 3;
+    else if (reviewFilter === 'flagged') matchTab = r.is_flagged === true;
 
     let matchSearch = true;
     if (reviewSearch.trim()) {
       const q = reviewSearch.toLowerCase();
-      matchSearch = r.customer.toLowerCase().includes(q) ||
-                    r.vendor.toLowerCase().includes(q) ||
-                    r.comment.toLowerCase().includes(q);
+      matchSearch = (r.customer_name && r.customer_name.toLowerCase().includes(q)) ||
+                    (r.vendor_name && r.vendor_name.toLowerCase().includes(q)) ||
+                    (r.comment && r.comment.toLowerCase().includes(q));
     }
     return matchTab && matchSearch;
   });
@@ -901,22 +843,19 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Sub-tabs & Search */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem' }}>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', marginBottom: '1.5rem', paddingBottom: '0.2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', maxWidth: '100%' }}>
                     <button style={subTabStyle(reviewFilter === 'all')} onClick={() => setReviewFilter('all')}>
-                      All (1,204)
+                      All ({reviewTotalCount})
                     </button>
                     <button style={subTabStyle(reviewFilter === '5')} onClick={() => setReviewFilter('5')}>
-                      5★ (890)
+                      5★ ({review5Count})
                     </button>
                     <button style={subTabStyle(reviewFilter === '4')} onClick={() => setReviewFilter('4')}>
-                      4★ (240)
+                      4★ ({review4Count})
                     </button>
                     <button style={subTabStyle(reviewFilter === '3')} onClick={() => setReviewFilter('3')}>
-                      3★ and below (74)
-                    </button>
-                    <button style={subTabStyle(reviewFilter === 'flagged')} onClick={() => setReviewFilter('flagged')}>
-                      Flagged (3)
+                      3★ and below ({review3AndBelowCount})
                     </button>
                   </div>
 
@@ -949,43 +888,29 @@ export const AdminDashboard = () => {
                       {filteredReviews.length === 0 ? (
                         <tr>
                           <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--muted)' }}>
-                            No reviews found.
+                            No customer reviews recorded yet.
                           </td>
                         </tr>
                       ) : (
                         filteredReviews.map((r) => (
                           <tr key={r.id}>
-                            <td style={{ fontWeight: 600, color: 'var(--ink)' }}>{r.customer}</td>
-                            <td style={{ color: 'var(--ink)' }}>{r.vendor}</td>
+                            <td style={{ fontWeight: 600, color: 'var(--ink)' }}>{r.customer_name || 'Customer'}</td>
+                            <td style={{ color: 'var(--ink)' }}>{r.vendor_name || 'Vendor Store'}</td>
                             <td style={{ color: 'var(--lime)', letterSpacing: '0.1em' }}>
-                              {'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}
+                              {'★'.repeat(r.rating) + '☆'.repeat(Math.max(0, 5 - r.rating))}
                             </td>
                             <td style={{ color: 'var(--muted)', maxWidth: '320px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {r.comment}
+                              {r.comment || 'No written comment'}
                             </td>
-                            <td style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{r.date}</td>
+                            <td style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{getRelativeTime(r.created_at)}</td>
                             <td style={{ textAlign: 'right' }}>
-                              {r.flagged ? (
-                                <button
-                                  onClick={() => {
-                                    setModalItem(r);
-                                    setModalType('review');
-                                  }}
-                                  style={actionButtonStyle('reject')}
-                                >
-                                  Flagged
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    setModalItem(r);
-                                    setModalType('review');
-                                  }}
-                                  style={actionButtonStyle('manage')}
-                                >
-                                  View
-                                </button>
-                              )}
+                              <button
+                                onClick={() => handleDeleteReview(r.id)}
+                                disabled={reviewActionLoading === r.id}
+                                style={actionButtonStyle('reject')}
+                              >
+                                {reviewActionLoading === r.id ? 'Deleting...' : 'Delete'}
+                              </button>
                             </td>
                           </tr>
                         ))
@@ -1048,6 +973,193 @@ export const AdminDashboard = () => {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '640px' }}>
+                  {/* Administrator Profile Details Card */}
+                  <div className="card">
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.35rem' }}>
+                      Administrator Profile
+                    </h3>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--muted)', marginBottom: '1.25rem' }}>
+                      Update your administrator account details, display name, contact phone, and security credentials.
+                    </p>
+
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (adminPassword && adminPassword.length < 6) {
+                          toast.error('New password must be at least 6 characters.');
+                          return;
+                        }
+                        try {
+                          setSavingProfile(true);
+                          const updatePayload = {
+                            name: adminName.trim(),
+                            phone: adminPhone.trim(),
+                            city: adminCity.trim(),
+                            address: adminAddress.trim()
+                          };
+                          if (adminPassword) {
+                            updatePayload.password = adminPassword;
+                          }
+                          const { data } = await api.put('/auth/profile', updatePayload);
+                          if (data.success) {
+                            toast.success('Admin details updated successfully!');
+                            setAdminPassword('');
+                            fetchData();
+                          }
+                        } catch (err) {
+                          toast.error(err.response?.data?.message || 'Failed to update admin profile');
+                        } finally {
+                          setSavingProfile(false);
+                        }
+                      }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                    >
+                      <div className="auth-row-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.4rem' }}>
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={adminName}
+                            onChange={(e) => setAdminName(e.target.value)}
+                            required
+                            style={{
+                              width: '100%',
+                              padding: '0.65rem 0.85rem',
+                              backgroundColor: 'var(--surface)',
+                              border: '1px solid var(--line)',
+                              borderRadius: 'var(--radius)',
+                              color: 'var(--ink)',
+                              fontSize: '0.875rem',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.4rem' }}>
+                            Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            value={adminPhone}
+                            placeholder="08012345678"
+                            onChange={(e) => setAdminPhone(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '0.65rem 0.85rem',
+                              backgroundColor: 'var(--surface)',
+                              border: '1px solid var(--line)',
+                              borderRadius: 'var(--radius)',
+                              color: 'var(--ink)',
+                              fontSize: '0.875rem',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="auth-row-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.4rem' }}>
+                            City / Territory
+                          </label>
+                          <input
+                            type="text"
+                            value={adminCity}
+                            onChange={(e) => setAdminCity(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '0.65rem 0.85rem',
+                              backgroundColor: 'var(--surface)',
+                              border: '1px solid var(--line)',
+                              borderRadius: 'var(--radius)',
+                              color: 'var(--ink)',
+                              fontSize: '0.875rem',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.4rem' }}>
+                            Email Address (Read-only)
+                          </label>
+                          <input
+                            type="email"
+                            value={user?.email || ''}
+                            disabled
+                            style={{
+                              width: '100%',
+                              padding: '0.65rem 0.85rem',
+                              backgroundColor: 'var(--surface-2)',
+                              border: '1px solid var(--line)',
+                              borderRadius: 'var(--radius)',
+                              color: 'var(--muted)',
+                              fontSize: '0.875rem',
+                              outline: 'none',
+                              cursor: 'not-allowed'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.4rem' }}>
+                          Physical / Office Address
+                        </label>
+                        <input
+                          type="text"
+                          value={adminAddress}
+                          placeholder="e.g. Plot 204, Garki II, Abuja"
+                          onChange={(e) => setAdminAddress(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '0.65rem 0.85rem',
+                            backgroundColor: 'var(--surface)',
+                            border: '1px solid var(--line)',
+                            borderRadius: 'var(--radius)',
+                            color: 'var(--ink)',
+                            fontSize: '0.875rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.4rem' }}>
+                          Change Password (leave blank to keep current)
+                        </label>
+                        <input
+                          type="password"
+                          value={adminPassword}
+                          placeholder="••••••••"
+                          onChange={(e) => setAdminPassword(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '0.65rem 0.85rem',
+                            backgroundColor: 'var(--surface)',
+                            border: '1px solid var(--line)',
+                            borderRadius: 'var(--radius)',
+                            color: 'var(--ink)',
+                            fontSize: '0.875rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <button
+                          type="submit"
+                          disabled={savingProfile}
+                          className="btn btn-primary"
+                          style={{ padding: '0.65rem 1.5rem', width: '100%' }}
+                        >
+                          {savingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
                   <div className="card">
                     <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.5rem' }}>
                       Payment Gateway Integration

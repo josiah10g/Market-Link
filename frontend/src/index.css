@@ -716,4 +716,17 @@ input[type="number"] {
     white-space: nowrap;
     flex-shrink: 0;
   }
+
+  /* Admin & Vendor Table Mobile Responsiveness */
+  .table-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius) !important;
+  }
+
+  .data-table {
+    min-width: 600px !important;
+  }
 }
+
