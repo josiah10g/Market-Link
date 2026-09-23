@@ -104,11 +104,20 @@ module.exports = {
     }
 
     // 5. GET VENDOR BY ID
-    if (lower.includes('from vendors where id =') || lower.includes('from vendors v where v.id =')) {
-      const id = params[0];
-      const { data, error } = await supabase.from('vendors').select('*').eq('id', id);
-      if (error) throw error;
-      return { rows: data || [] };
+    if (lower.includes('from vendors where id =') || lower.includes('from vendors where id=$') || lower.includes('from vendors v where v.id =') || lower.includes('from vendors v join users') || lower.includes('from vendors v')) {
+      if (lower.includes('where v.id =') || lower.includes('where id =')) {
+        const id = params[0];
+        const { data, error } = await supabase.from('vendors').select('*, users(name, email)').eq('id', id);
+        if (error) throw error;
+        const formatted = (data || []).map(v => ({
+          ...v,
+          owner_name: v.users?.name,
+          user_name: v.users?.name,
+          email: v.users?.email,
+          user_email: v.users?.email
+        }));
+        return { rows: formatted };
+      }
     }
 
     // 6. PRODUCTS FOR SPECIFIC VENDOR
@@ -429,7 +438,10 @@ module.exports = {
       // Dynamic filters passed via query params
       if (params.length > 0) {
         if (lower.includes('lower(v.category) = lower(') || lower.includes('category =')) {
-          q = q.ilike('category', params[0]);
+          const catParam = params.find(p => typeof p === 'string' && !p.startsWith('%') && !p.endsWith('%') && !['approved', 'pending', 'suspended', 'rejected'].includes(p));
+          if (catParam) {
+            q = q.ilike('category', catParam);
+          }
         }
       }
 
@@ -464,15 +476,41 @@ module.exports = {
       if (lower.includes('is_active = true')) {
         q = q.eq('is_active', true);
       }
+      if (lower.includes('p.vendor_id =') || lower.includes('vendor_id =')) {
+        // Find vendor_id from params
+        const vendorIdParam = params.find(p => typeof p === 'number' || (!isNaN(parseInt(p, 10)) && typeof p === 'string' && !p.includes('%')));
+        if (vendorIdParam) {
+          q = q.eq('vendor_id', parseInt(vendorIdParam, 10));
+        }
+      }
+      if (lower.includes('lower(p.category) = lower(') || lower.includes('category =')) {
+        const catParam = params.find(p => typeof p === 'string' && !p.includes('%') && isNaN(parseInt(p, 10)));
+        if (catParam) {
+          q = q.ilike('category', catParam);
+        }
+      }
       const { data, error } = await q.order('created_at', { ascending: false });
       if (error) throw error;
-      const formatted = (data || []).map(p => ({
+      let formatted = (data || []).map(p => ({
         ...p,
         business_name: p.vendors?.business_name,
         vendor_city: p.vendors?.city,
         vendor_category: p.vendors?.category,
         vendor_status: p.vendors?.status
       }));
+
+      if (lower.includes('p.name ilike') || lower.includes('p.description ilike')) {
+        const searchParam = params.find(p => typeof p === 'string' && p.startsWith('%') && p.endsWith('%'));
+        if (searchParam) {
+          const term = searchParam.replace(/%/g, '').toLowerCase();
+          formatted = formatted.filter(p =>
+            (p.name && p.name.toLowerCase().includes(term)) ||
+            (p.description && p.description.toLowerCase().includes(term)) ||
+            (p.business_name && p.business_name.toLowerCase().includes(term))
+          );
+        }
+      }
+
       return { rows: formatted };
     }
 

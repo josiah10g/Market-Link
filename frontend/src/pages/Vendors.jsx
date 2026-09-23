@@ -12,7 +12,7 @@ export const Vendors = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const categories = ['All', 'Food', 'Fashion', 'Beauty', 'Repairs'];
+  const [availableCategories, setAvailableCategories] = useState(['All', 'Food', 'Fashion', 'Beauty', 'Repairs']);
 
   const fetchVendors = async () => {
     try {
@@ -29,6 +29,10 @@ export const Vendors = () => {
       const { data } = await api.get(url);
       if (data.success) {
         setVendors(data.data);
+        // Collect dynamic categories from vendors
+        const foundCategories = Array.from(new Set(data.data.map(v => v.category).filter(Boolean)));
+        const merged = ['All', ...new Set(['Food', 'Fashion', 'Beauty', 'Repairs', ...foundCategories])];
+        setAvailableCategories(merged);
       }
     } catch (err) {
       console.error(err);
@@ -77,7 +81,7 @@ export const Vendors = () => {
           >
             {/* Category Pills */}
             <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.2rem' }}>
-              {categories.map((cat) => (
+              {availableCategories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}

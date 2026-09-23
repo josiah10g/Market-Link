@@ -239,6 +239,28 @@ export const VendorDashboard = () => {
     }
   };
 
+  const handleTransition = async (orderId, newStatus) => {
+    try {
+      setActionLoading(orderId);
+      const res = await api.put(`/orders/${orderId}/status`, { status: newStatus });
+      if (res.data.success) {
+        if (newStatus === 'accepted') {
+          success(`Order #${orderId} accepted! Move to preparation when ready.`);
+        } else if (newStatus === 'cancelled') {
+          success(`Order #${orderId} has been declined.`);
+        } else {
+          success(`Order status updated to "${newStatus.replace('_', ' ')}".`);
+        }
+        fetchData();
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Status transition failed';
+      toastError(msg);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   // Next status action button helper
   const renderStatusAction = (order) => {
     if (actionLoading === order.id) {
@@ -248,13 +270,22 @@ export const VendorDashboard = () => {
     switch (order.status) {
       case 'pending':
         return (
-          <button
-            onClick={() => handleTransition(order.id, 'accepted')}
-            className="btn btn-primary"
-            style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
-          >
-            Accept →
-          </button>
+          <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => handleTransition(order.id, 'accepted')}
+              className="btn btn-primary"
+              style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => handleTransition(order.id, 'cancelled')}
+              className="btn btn-danger"
+              style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
+            >
+              Decline
+            </button>
+          </div>
         );
       case 'accepted':
         return (

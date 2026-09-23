@@ -44,7 +44,13 @@ export const VendorOrders = () => {
       setActionLoading(orderId);
       const res = await api.put(`/orders/${orderId}/status`, { status: newStatus });
       if (res.data.success) {
-        success(`Order status updated to "${newStatus.replace('_', ' ')}"`);
+        if (newStatus === 'accepted') {
+          success(`Order accepted! Ready for processing.`);
+        } else if (newStatus === 'cancelled') {
+          success(`Order declined and cancelled.`);
+        } else {
+          success(`Order status updated to "${newStatus.replace('_', ' ')}"`);
+        }
         fetchOrders();
         if (selectedOrder && selectedOrder.id === orderId) {
           setSelectedOrder((prev) => ({ ...prev, status: newStatus }));

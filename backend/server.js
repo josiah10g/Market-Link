@@ -4,7 +4,18 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { errorHandler } = require('./middleware/errorHandler');
 
+const path = require('path');
 dotenv.config();
+// Also attempt loading backend/.env if running from workspace root
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+// Process-level crash prevention guards for production cloud environments (Railway)
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+});
 
 const authRoutes = require('./routes/authRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
@@ -32,6 +43,54 @@ app.get('/api/health', (req, res) => {
     database: 'PostgreSQL / Supabase',
     timestamp: new Date().toISOString()
   });
+});
+
+// Quick Email Diagnostic Endpoint
+app.get('/api/test-email', async (req, res) => {
+  const targetEmail = req.query.to || process.env.SMTP_USER;
+  if (!targetEmail) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a recipient email query param: /api/test-email?to=your_email@gmail.com'
+    });
+  }
+
+  try {
+    const { getTransporter } = require('./utils/emailService');
+    const transporter = getTransporter();
+
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"MarketLink" <${process.env.SMTP_USER}>`,
+      to: targetEmail,
+      subject: 'MarketLink Nodemailer Test Email',
+      text: 'Hello from MarketLink! Your Nodemailer SMTP setup is working perfectly.',
+      html: `
+        <div style="font-family: sans-serif; background-color: #0E1311; color: #E8EDE9; padding: 28px; border-radius: 8px; border: 1px solid #1E2724; max-width: 500px;">
+          <h2 style="color: #B9FF66; margin-top: 0;">MarketLink Nodemailer Test</h2>
+          <p style="font-size: 15px; line-height: 1.5; color: #8C9992;">
+            Congratulations! If you are reading this email, your Nodemailer credentials and SMTP connection are configured correctly and active.
+          </p>
+          <div style="margin-top: 20px; padding: 12px 16px; background-color: #171F1C; border-left: 3px solid #B9FF66; border-radius: 4px; font-size: 13px;">
+            <strong>Recipient:</strong> ${targetEmail}<br/>
+            <strong>Timestamp:</strong> ${new Date().toLocaleString()}
+          </div>
+        </div>
+      `
+    });
+
+    res.json({
+      success: true,
+      message: `Test email successfully sent to ${targetEmail}!`,
+      messageId: info.messageId || 'sent'
+    });
+  } catch (err) {
+    console.error('[TEST EMAIL ERROR]', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send test email',
+      error: err.message
+    });
+  }
 });
 
 // Live Platform Public Stats endpoint (Real-time Supabase count)

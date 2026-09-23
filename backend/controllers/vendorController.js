@@ -162,10 +162,10 @@ const getAdminVendors = asyncHandler(async (req, res) => {
 // @access  Private (Admin only)
 const updateVendorStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body; // 'approved', 'suspended', 'pending'
+  const { status } = req.body; // 'approved', 'suspended', 'pending', 'rejected'
 
-  if (!['approved', 'suspended', 'pending'].includes(status)) {
-    return res.status(400).json({ success: false, message: 'Invalid status. Must be approved, suspended, or pending.' });
+  if (!['approved', 'suspended', 'pending', 'rejected'].includes(status)) {
+    return res.status(400).json({ success: false, message: 'Invalid status. Must be approved, suspended, pending, or rejected.' });
   }
 
   const { rows } = await db.query(

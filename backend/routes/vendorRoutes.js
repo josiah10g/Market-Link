@@ -8,10 +8,14 @@ const {
   getAdminVendors,
   updateVendorStatus
 } = require('../controllers/vendorController');
+const { uploadImage } = require('../controllers/productController');
 const { protect, requireRole } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 
 const router = express.Router();
+
+// Image upload route for vendor banners/logos
+router.post('/upload-image', protect, requireRole(['vendor', 'admin']), uploadImage);
 
 // Public routes
 router.get('/', getVendors);
@@ -38,7 +42,7 @@ router.put(
   protect,
   requireRole('admin'),
   [
-    body('status').isIn(['approved', 'suspended', 'pending']).withMessage('Status must be approved, suspended, or pending'),
+    body('status').isIn(['approved', 'suspended', 'pending', 'rejected']).withMessage('Status must be approved, suspended, pending, or rejected'),
     validate
   ],
   updateVendorStatus

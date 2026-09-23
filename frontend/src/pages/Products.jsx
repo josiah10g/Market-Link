@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search, Filter } from 'lucide-react';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { Search, Filter, Store, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import { LoadingState, EmptyState, ErrorState } from '../components/StateIndicators';
@@ -18,6 +18,9 @@ export const Products = () => {
 
   const [searchParams] = useSearchParams();
   const vendorFilter = searchParams.get('vendor_id');
+
+  const [currentVendor, setCurrentVendor] = useState(null);
+  const navigate = useNavigate();
 
   const { switchVendorAndAdd } = useCart();
 
@@ -48,6 +51,15 @@ export const Products = () => {
 
   useEffect(() => {
     fetchProducts();
+    if (vendorFilter) {
+      api.get(`/vendors/${vendorFilter}`).then(res => {
+        if (res.data.success) {
+          setCurrentVendor(res.data.data);
+        }
+      }).catch(() => setCurrentVendor(null));
+    } else {
+      setCurrentVendor(null);
+    }
   }, [category, sort, vendorFilter]);
 
   const handleSearch = (e) => {
@@ -63,11 +75,29 @@ export const Products = () => {
         <div className="container">
           <div style={{ marginBottom: '2rem' }}>
             <h1 className="heading-display" style={{ fontSize: '2.2rem', marginBottom: '0.4rem', color: 'var(--ink)' }}>
-              Browse Catalog
+              {currentVendor ? currentVendor.business_name : 'Browse Catalog'}
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: '0.9375rem' }}>
-              Real-time stock and transparent turnaround times directly from local Abuja businesses.
+              {currentVendor
+                ? `${currentVendor.description || 'Verified local vendor'} · ${currentVendor.city || 'Abuja'}`
+                : 'Real-time stock and transparent turnaround times directly from local Abuja businesses.'}
             </p>
+
+            {vendorFilter && (
+              <div style={{ marginTop: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--surface-2)', border: '1px solid var(--lime)', padding: '0.35rem 0.85rem', borderRadius: '4px' }}>
+                <Store size={14} color="var(--lime)" />
+                <span style={{ fontSize: '0.8125rem', color: 'var(--ink)' }}>
+                  Viewing items from: <strong>{currentVendor?.business_name || `Vendor #${vendorFilter}`}</strong>
+                </span>
+                <button
+                  onClick={() => navigate('/products')}
+                  style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', marginLeft: '0.5rem' }}
+                  title="Clear vendor filter"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Search, Category & Sort Controls */}
