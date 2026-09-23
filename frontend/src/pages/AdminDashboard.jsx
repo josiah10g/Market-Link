@@ -200,6 +200,23 @@ export const AdminDashboard = () => {
   const approvedVendorsCount = vendors.filter(v => v.status === 'approved').length;
   const suspendedVendorsCount = vendors.filter(v => v.status === 'suspended').length;
 
+  // Filtered vendors list
+  const filteredVendors = vendors.filter(v => {
+    let matchTab = true;
+    if (vendorFilter === 'pending') matchTab = v.status === 'pending';
+    else if (vendorFilter === 'approved') matchTab = v.status === 'approved';
+    else if (vendorFilter === 'suspended') matchTab = ['suspended', 'rejected'].includes(v.status);
+
+    let matchSearch = true;
+    if (vendorSearch.trim()) {
+      const q = vendorSearch.toLowerCase();
+      matchSearch = (v.business_name && v.business_name.toLowerCase().includes(q)) ||
+                    (v.category && v.category.toLowerCase().includes(q)) ||
+                    (v.user_email && v.user_email.toLowerCase().includes(q));
+    }
+    return matchTab && matchSearch;
+  });
+
   // User counts from actual database
   const customerCount = usersList.filter(u => u.role === 'customer').length;
   const vendorUserCount = usersList.filter(u => u.role === 'vendor').length;
@@ -837,7 +854,6 @@ export const AdminDashboard = () => {
                           const isPending = o.status === 'pending';
                           const isInProgress = o.status === 'in_progress' || o.status === 'accepted' || o.status === 'ready';
                           const isCompleted = o.status === 'completed';
-                          const isCancelled = o.status === 'cancelled';
 
                           return (
                             <tr key={o.id}>

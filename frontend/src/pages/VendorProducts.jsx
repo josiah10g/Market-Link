@@ -380,9 +380,10 @@ export const VendorProducts = () => {
           </div>
         ) : (
           <div
+            className="vendor-product-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
               gap: '1rem'
             }}
           >
@@ -444,7 +445,7 @@ export const VendorProducts = () => {
                   {/* Edit / Delete Buttons */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--line)' }}>
                     <button
-                      onClick={() => openEditProduct(prod)}
+                      onClick={() => openEditModal(prod)}
                       style={{
                         background: 'none',
                         border: 'none',
@@ -460,7 +461,7 @@ export const VendorProducts = () => {
                       Edit
                     </button>
                     <button
-                      onClick={() => setDeletingId(prod.id)}
+                      onClick={() => handleDeleteProduct(prod.id, prod.name)}
                       style={{
                         background: 'none',
                         border: 'none',
