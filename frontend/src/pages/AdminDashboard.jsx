@@ -200,6 +200,53 @@ export const AdminDashboard = () => {
   const approvedVendorsCount = vendors.filter(v => v.status === 'approved').length;
   const suspendedVendorsCount = vendors.filter(v => v.status === 'suspended').length;
 
+  // User counts from actual database
+  const customerCount = usersList.filter(u => u.role === 'customer').length;
+  const vendorUserCount = usersList.filter(u => u.role === 'vendor').length;
+  const adminCount = usersList.filter(u => u.role === 'admin').length;
+  const suspendedUserCount = usersList.filter(u => u.is_active === false).length;
+
+  // Filtered users list
+  const filteredUsers = usersList.filter(u => {
+    let matchTab = true;
+    if (userFilter === 'customers') matchTab = u.role === 'customer';
+    else if (userFilter === 'vendors') matchTab = u.role === 'vendor';
+    else if (userFilter === 'admins') matchTab = u.role === 'admin';
+    else if (userFilter === 'suspended') matchTab = u.is_active === false;
+
+    let matchSearch = true;
+    if (userSearch.trim()) {
+      const q = userSearch.toLowerCase();
+      matchSearch = (u.name && u.name.toLowerCase().includes(q)) ||
+                    (u.email && u.email.toLowerCase().includes(q));
+    }
+    return matchTab && matchSearch;
+  });
+
+  // Order counts from actual database
+  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
+  const inProgressOrdersCount = orders.filter(o => ['in_progress', 'accepted', 'ready'].includes(o.status)).length;
+  const completedOrdersCount = orders.filter(o => o.status === 'completed').length;
+  const cancelledOrdersCount = orders.filter(o => o.status === 'cancelled').length;
+
+  // Filtered orders list
+  const filteredOrders = orders.filter(o => {
+    let matchTab = true;
+    if (orderFilter === 'pending') matchTab = o.status === 'pending';
+    else if (orderFilter === 'in_progress') matchTab = ['in_progress', 'accepted', 'ready'].includes(o.status);
+    else if (orderFilter === 'completed') matchTab = o.status === 'completed';
+    else if (orderFilter === 'cancelled') matchTab = o.status === 'cancelled';
+
+    let matchSearch = true;
+    if (orderSearch.trim()) {
+      const q = orderSearch.toLowerCase();
+      matchSearch = (o.order_code && o.order_code.toLowerCase().includes(q)) ||
+                    (o.customer_name && o.customer_name.toLowerCase().includes(q)) ||
+                    (o.vendor_name && o.vendor_name.toLowerCase().includes(q));
+    }
+    return matchTab && matchSearch;
+  });
+
   // Review counts from actual database
   const reviewTotalCount = reviewsList.length;
   const review5Count = reviewsList.filter(r => Number(r.rating) === 5).length;
@@ -1396,8 +1443,9 @@ export const AdminDashboard = () => {
                       <div style={{ borderTop: '1px solid var(--line)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                         <button
                           onClick={() => {
-                            toast.success('Review removed from storefront.');
+                            const revId = modalItem.id;
                             setModalItem(null);
+                            handleDeleteReview(revId);
                           }}
                           className="btn btn-danger"
                           style={{ fontSize: '0.75rem' }}
@@ -1406,7 +1454,7 @@ export const AdminDashboard = () => {
                         </button>
                         <button
                           onClick={() => {
-                            toast.success('Review approved and verified.');
+                            toast.success('Review verified and published.');
                             setModalItem(null);
                           }}
                           className="btn btn-primary"

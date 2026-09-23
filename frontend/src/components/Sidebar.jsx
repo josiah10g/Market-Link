@@ -257,13 +257,13 @@ export const Sidebar = ({ role = 'vendor', businessName = 'Store', activeTab, on
           >
             <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--line)' }}>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.name || (isVendor ? 'Vendor' : 'Administrator')}
+                {user?.name || (isVendor ? 'Vendor' : 'Admin')}
               </div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--muted)', marginTop: '0.1rem' }}>
-                {user?.email || 'user@marketlink.ng'}
+                {user?.email || 'admin@marketlink.ng'}
               </div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--lime)', fontWeight: 600, marginTop: '0.25rem' }}>
-                {isVendor ? 'Verified Merchant' : 'Super Admin'}
+                {isVendor ? 'Verified Merchant' : 'Admin'}
               </div>
             </div>
 
