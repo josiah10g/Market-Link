@@ -723,10 +723,29 @@ input[type="number"] {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
     border-radius: var(--radius) !important;
+    margin-bottom: 1.5rem;
   }
 
   .data-table {
-    min-width: 600px !important;
+    min-width: 640px !important;
+  }
+
+  .admin-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .admin-filter-bar > div:last-child {
+    width: 100% !important;
+  }
+
+  .admin-subtabs-scroll {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
   }
 }
+
 

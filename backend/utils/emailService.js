@@ -10,36 +10,45 @@ let transporter = null;
 const getTransporter = () => {
   if (transporter) return transporter;
 
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const rawHost = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
   const port = Number(process.env.SMTP_PORT) || 465;
-  const user = process.env.SMTP_USER || '';
-  const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '';
+  const user = (process.env.SMTP_USER || '').trim();
+  // Strip out spaces in App Password just in case user pasted with spaces or trailing quotes
+  const rawPass = (process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '').trim();
+  const pass = rawPass.replace(/\s+/g, '');
 
   if (user && pass) {
-    console.log(`[NODEMAILER] Configuring SMTP: host=${host}, port=${port}, user=${user}, pass=${'*'.repeat(Math.min(pass.length, 4))}...`);
+    console.log(`[NODEMAILER] Configuring SMTP: host=${rawHost}, port=${port}, user=${user}, passLength=${pass.length}`);
     
-    transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465, // true for 465, false for 587
-      auth: { user, pass },
-      tls: {
-        rejectUnauthorized: false // Allow self-signed certs in dev
-      }
-    });
+    const transportConfig = {
+      auth: { user, pass }
+    };
+
+    // If host is gmail, using service: 'gmail' automatically configures optimal ports and hosts
+    if (rawHost.includes('gmail')) {
+      transportConfig.service = 'gmail';
+    } else {
+      transportConfig.host = rawHost;
+      transportConfig.port = port;
+      transportConfig.secure = port === 465;
+      transportConfig.tls = {
+        rejectUnauthorized: false
+      };
+    }
+
+    transporter = nodemailer.createTransport(transportConfig);
 
     // Verify the connection on first creation
     transporter.verify((err, success) => {
       if (err) {
         console.error('[NODEMAILER] SMTP connection verification FAILED:', err.message);
-        console.error('[NODEMAILER] Check your SMTP_USER and SMTP_PASS (for Gmail, use an App Password from https://myaccount.google.com/apppasswords)');
+        console.error('[NODEMAILER] Detailed code/command:', err.code, err.command);
       } else {
         console.log('[NODEMAILER] ✓ SMTP connection verified successfully — emails will be delivered');
       }
     });
   } else {
     console.warn('[NODEMAILER] No SMTP_USER/SMTP_PASS set — running in simulation mode (emails logged to console only)');
-    // Development / fallback logger transporter when credentials aren't set yet
     transporter = {
       sendMail: async (mailOptions) => {
         console.log('\n========================================');

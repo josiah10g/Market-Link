@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Star, CheckSquare, Users, ShoppingBag, Eye, ShieldAlert, Check, X, Shield, ArrowUpRight } from 'lucide-react';
+import { Search, Star, CheckSquare, Users, ShoppingBag, Eye, ShieldAlert, Check, X, Shield, ArrowUpRight, Mail } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { LoadingState, ErrorState } from '../components/StateIndicators';
 import { useAuth } from '../context/AuthContext';
@@ -35,6 +35,7 @@ export const AdminDashboard = () => {
   const [adminAddress, setAdminAddress] = useState(user?.address || '');
   const [adminPassword, setAdminPassword] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
 
   // Sync user state when user updates
   useEffect(() => {
@@ -1169,6 +1170,59 @@ export const AdminDashboard = () => {
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--lime)', fontSize: '0.8125rem', fontWeight: 500 }}>
                       <Check size={16} /> Paystack Connected (Abuja NGN Settlement)
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.25rem' }}>
+                          Email & Notification System (Nodemailer)
+                        </h3>
+                        <p style={{ fontSize: '0.8125rem', color: 'var(--muted)', margin: 0 }}>
+                          Connected to Gmail SMTP (<code style={{ color: 'var(--lime)', fontSize: '0.75rem' }}>smtp.gmail.com:465</code>).
+                        </p>
+                      </div>
+                      <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Check size={12} /> SMTP Configured
+                      </span>
+                    </div>
+
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--muted)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                      Customer order confirmations, receipt summaries, and vendor new order alerts are dispatched automatically via your Gmail App Password.
+                    </p>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        disabled={testingEmail}
+                        onClick={async () => {
+                          try {
+                            setTestingEmail(true);
+                            const { data } = await api.post('/auth/test-smtp', { email: user?.email });
+                            if (data.success) {
+                              toast.success(`Success! Live test email sent to ${user?.email}. Check your inbox!`);
+                            } else {
+                              toast.error(data.message || 'Failed to send test email');
+                            }
+                          } catch (err) {
+                            toast.error(err.response?.data?.message || err.message || 'SMTP test failed');
+                          } finally {
+                            setTestingEmail(false);
+                          }
+                        }}
+                        className="btn btn-outline"
+                        style={{
+                          fontSize: '0.8125rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.55rem 1rem'
+                        }}
+                      >
+                        <Mail size={15} />
+                        {testingEmail ? 'Sending Test Email...' : 'Send Live Test Email to Admin'}
+                      </button>
                     </div>
                   </div>
 

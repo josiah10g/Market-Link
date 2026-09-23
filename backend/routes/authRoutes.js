@@ -34,6 +34,34 @@ router.post(
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 
+// Admin Email Diagnostics & Test Route
+router.post('/test-smtp', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { sendEmail } = require('../utils/emailService');
+    const recipient = req.body.email || req.user.email;
+    const testResult = await sendEmail({
+      to: recipient,
+      subject: 'MarketLink — SMTP Test Verification',
+      text: 'Congratulations! Your Nodemailer SMTP integration is working successfully on MarketLink.',
+      html: `
+        <div style="background-color:#121816; color:#EDEFEC; padding:24px; border-radius:8px; font-family:sans-serif;">
+          <h2 style="color:#B9FF66; margin-top:0;">MarketLink SMTP Verified!</h2>
+          <p>This is a live test email confirming your Gmail SMTP App Password and transport configuration are functioning 100%.</p>
+          <p style="font-size:12px; color:#8B978F;">Sent via Nodemailer to ${recipient} at ${new Date().toISOString()}</p>
+        </div>
+      `
+    });
+
+    if (testResult && testResult.messageId) {
+      return res.json({ success: true, message: `Test email dispatched successfully to ${recipient}!`, messageId: testResult.messageId });
+    } else {
+      return res.status(500).json({ success: false, message: 'Nodemailer failed to dispatch email. Check server logs.' });
+    }
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Admin User Management Routes (Appoint & Remove Admin)
 router.get('/users', protect, requireRole('admin'), getAllUsers);
 router.put('/users/:id/role', protect, requireRole('admin'), updateUserRole);
