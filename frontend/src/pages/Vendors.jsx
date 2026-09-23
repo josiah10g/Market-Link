@@ -67,7 +67,9 @@ export const Vendors = () => {
           </div>
 
           {/* Filter Bar & Search */}
+          {/* Filter Bar & Search */}
           <div
+            className="admin-filter-bar"
             style={{
               display: 'flex',
               flexWrap: 'wrap',
@@ -80,7 +82,7 @@ export const Vendors = () => {
             }}
           >
             {/* Category Pills */}
-            <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.2rem' }}>
+            <div className="admin-subtabs-scroll" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.2rem' }}>
               {availableCategories.map((cat) => (
                 <button
                   key={cat}
@@ -94,7 +96,9 @@ export const Vendors = () => {
                     border: '1px solid',
                     borderColor: category === cat ? 'var(--lime)' : 'var(--line)',
                     backgroundColor: category === cat ? 'var(--lime-soft)' : 'var(--surface)',
-                    color: category === cat ? 'var(--lime)' : 'var(--muted)'
+                    color: category === cat ? 'var(--lime)' : 'var(--muted)',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   {cat}
@@ -103,19 +107,19 @@ export const Vendors = () => {
             </div>
 
             {/* Search Input */}
-            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
-              <div style={{ position: 'relative', width: '260px' }}>
+            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: '340px' }}>
+              <div style={{ position: 'relative', flexGrow: 1 }}>
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search vendor name..."
                   className="form-input"
-                  style={{ paddingLeft: '2.2rem', paddingRight: '0.8rem', paddingBlock: '0.5rem' }}
+                  style={{ paddingLeft: '2.2rem', paddingRight: '0.8rem', paddingBlock: '0.5rem', width: '100%' }}
                 />
                 <Search size={15} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
               </div>
-              <button type="submit" className="btn btn-primary" style={{ padding: '0.5rem 0.9rem', fontSize: '0.8125rem' }}>
+              <button type="submit" className="btn btn-primary" style={{ padding: '0.5rem 0.9rem', fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>
                 Search
               </button>
             </form>
@@ -130,10 +134,11 @@ export const Vendors = () => {
             <EmptyState title="No vendors found" description="Try selecting a different category or clearing search filters." />
           ) : (
             <div
+              className="responsive-vendor-grid"
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                gap: '1.5rem'
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '1.25rem'
               }}
             >
               {vendors.map((vendor) => (

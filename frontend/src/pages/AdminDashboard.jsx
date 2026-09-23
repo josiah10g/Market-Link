@@ -195,6 +195,11 @@ export const AdminDashboard = () => {
     }
   };
 
+  // Vendor counts from actual database
+  const pendingVendorsCount = vendors.filter(v => v.status === 'pending').length;
+  const approvedVendorsCount = vendors.filter(v => v.status === 'approved').length;
+  const suspendedVendorsCount = vendors.filter(v => v.status === 'suspended').length;
+
   // Review counts from actual database
   const reviewTotalCount = reviewsList.length;
   const review5Count = reviewsList.filter(r => Number(r.rating) === 5).length;

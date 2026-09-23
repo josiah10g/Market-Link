@@ -746,6 +746,10 @@ input[type="number"] {
     -webkit-overflow-scrolling: touch;
     padding-bottom: 4px;
   }
+
+  .responsive-vendor-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 

@@ -517,10 +517,10 @@ module.exports = {
     // 13. SELECT ORDERS
     if (lower.includes('from orders')) {
       // Order items for orders by ID
-      if (lower.startsWith('select * from orders where id =') || lower.startsWith('select id, vendor_id, customer_id, status, order_code from orders where id =')) {
+      if (lower.includes('from orders where id =') || lower.includes('from orders where id=$') || lower.includes('from orders o where o.id =')) {
         const orderId = params[0];
         let q = supabase.from('orders').select('*').eq('id', orderId);
-        if (params.length > 1) {
+        if (params.length > 1 && (lower.includes('vendor_id =') || lower.includes('vendor_id=$'))) {
           q = q.eq('vendor_id', params[1]);
         }
         const { data, error } = await q;

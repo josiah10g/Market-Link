@@ -355,9 +355,10 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     await client.query('BEGIN');
 
     // Fetch order with row lock
+    const orderIdNum = parseInt(id, 10);
     const orderRes = await client.query(
-      'SELECT * FROM orders WHERE id = $1 AND vendor_id = $2 FOR UPDATE',
-      [id, vendor.id]
+      'SELECT * FROM orders WHERE id = $1 AND vendor_id = $2',
+      [orderIdNum, vendor.id]
     );
 
     if (orderRes.rows.length === 0) {
