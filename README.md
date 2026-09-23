@@ -5,7 +5,7 @@
 ---
 
 ## Project Documentation 
-[docs/documentation.html]
+[Project Documentation](./docs/documentation.html)
 
 ## 1. Project Overview & Problem Statement
 
